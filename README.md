@@ -286,4 +286,4 @@ lib/payments/
 #### API Endpoints
 - `POST /api/billing/checkout` - Создание сессии оплаты
 - `POST /api/billing/portal` - Создание сессии управления подпиской  
-- `POST /api/billing/webhook` - Обработка webhook'ов от платежных систем
+- `POST /api/billing/webhook` - Обработка webhook'ов от платежных систем# horeca-control
