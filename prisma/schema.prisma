@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  name             String?
+  passwordHash     String?    @db.Text
+  tenantId         String?
+  isPlatformOwner  Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  tenants          tenants?   @relation(fields: [tenantId], references: [id])
+  UserRole         UserRole[]
+}
+
+model Role {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  description     String?
+  inheritsFrom    String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Role            Role?             @relation("RoleToRole", fields: [inheritsFrom], references: [id])
+  other_Role      Role[]            @relation("RoleToRole")
+  UserRole        UserRole[]
+  access_policies access_policies[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  Role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model access_policies {
+  id          String    @id
+  roleId      String
+  resourceKey String
+  action      String
+  effect      String
+  condition   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  resources   resources @relation(fields: [resourceKey], references: [key], onDelete: Cascade)
+  Role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, resourceKey, action])
+}
+
+model audit_logs {
+  id         String   @id
+  userId     String?
+  tenantId   String?
+  action     String
+  resource   String
+  resourceId String
+  oldValues  String?
+  newValues  String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+model entitlement_overrides {
+  id         String    @id
+  tenantId   String
+  featureKey String
+  value      String
+  reason     String?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+  features   features  @relation(fields: [featureKey], references: [key], onDelete: Cascade)
+  tenants    tenants   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, featureKey])
+}
+
+model features {
+  id                    String                  @id
+  key                   String                  @unique
+  name                  String
+  description           String?
+  type                  String
+  category              String?
+  defaultValue          String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  entitlement_overrides entitlement_overrides[]
+  plan_entitlements     plan_entitlements[]
+}
+
+model plan_entitlements {
+  id         String   @id
+  planId     String
+  featureKey String
+  value      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  features   features @relation(fields: [featureKey], references: [key], onDelete: Cascade)
+  plans      plans    @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureKey])
+}
+
+model plans {
+  id                String              @id
+  name              String              @unique
+  description       String?
+  status            String              @default("draft")
+  type              String
+  sortOrder         Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  plan_entitlements plan_entitlements[]
+  prices            prices[]
+  tenants           tenants[]
+}
+
+model prices {
+  id            String   @id
+  planId        String
+  amount        Int
+  currency      String   @default("usd")
+  interval      String
+  stripePriceId String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  plans         plans    @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
+model resources {
+  id              String            @id
+  key             String            @unique
+  name            String
+  description     String?
+  category        String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  access_policies access_policies[]
+}
+
+model tenants {
+  id                    String                  @id
+  name                  String
+  email                 String?
+  region                String?
+  planId                String?
+  isActive              Boolean                 @default(true)
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  User                  User[]
+  entitlement_overrides entitlement_overrides[]
+  plans                 plans?                  @relation(fields: [planId], references: [id])
+  subscriptions         Subscription[]
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  tenantId         String   @unique
+  plan             String   @default("BASIC")
+  status           String   @default("INACTIVE")
+  currentPeriodEnd DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  tenant           tenants  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+// ===== Labeling =====
+model Product {
+  id         String   @id @default(cuid())
+  name       String
+  shelfLifeH Int
+  tenantId   String
+  createdAt  DateTime @default(now())
+  labels     Label[]
+}
+
+model Label {
+  id        String   @id @default(cuid())
+  productId String
+  printedAt DateTime @default(now())
+  expiresAt DateTime
+  userId    String
+  tenantId  String
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+// ===== Files =====
+model File {
+  id         String   @id @default(cuid())
+  name       String
+  path       String
+  size       Int
+  uploadedAt DateTime @default(now())
+  tenantId   String
+  uploaderId String
+}
+
+// ===== Learning =====
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  tenantId    String
+  createdAt   DateTime @default(now())
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id       String   @id @default(cuid())
+  courseId String
+  title    String
+  content  String?
+  course   Course   @relation(fields: [courseId], references: [id])
+}
