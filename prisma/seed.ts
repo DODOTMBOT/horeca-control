@@ -6,9 +6,8 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Удаляем все существующие роли
-  await prisma.role.deleteMany({})
-  console.log('🗑️ All existing roles deleted')
+  // DATA_GUARD: Запрещаем deleteMany операции
+  console.log('🛡️ DATA_GUARD: Using upsert operations only')
 
   // Создаем только одну роль "Владелец" с полными правами
   const roles = [
@@ -47,29 +46,47 @@ async function main() {
     console.log(`✅ Role ${roleData.name} created/updated`)
   }
 
-  // Гарантируем наличие хотя бы одного пользователя
+  // Создаем демонстрационного пользователя owner@demo.local
+  const demoTenant = await prisma.tenant.upsert({
+    where: { email: 'owner@demo.local' },
+    update: { name: 'Demo Organization' },
+    create: { 
+      name: 'Demo Organization', 
+      email: 'owner@demo.local' 
+    }
+  })
+  console.log(`🏢 Demo tenant created/updated: ${demoTenant.name}`)
+
+  const passwordHash = await bcrypt.hash('demo12345', 12)
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'owner@demo.local' },
+    update: { 
+      name: 'Demo Owner',
+      passwordHash,
+      tenantId: demoTenant.id,
+    },
+    create: {
+      email: 'owner@demo.local',
+      name: 'Demo Owner',
+      passwordHash,
+      tenantId: demoTenant.id,
+    }
+  })
+  console.log(`👤 Demo user created/updated: owner@demo.local / demo12345`)
+
+  // Гарантируем наличие хотя бы одного пользователя для совместимости
   let firstUser = await prisma.user.findFirst()
   if (!firstUser) {
-    const tenant = await prisma.tenant.create({ data: { name: 'demo-tenant', email: 'demo@example.com' } })
-    const passwordHash = await bcrypt.hash('demo12345', 12)
-    firstUser = await prisma.user.create({
-      data: {
-        email: 'demo@example.com',
-        name: 'Demo User',
-        passwordHash,
-        tenantId: tenant.id,
-      }
-    })
-    console.log(`👤 Demo user created: demo@example.com / demo12345 (tenant ${tenant.id})`)
+    firstUser = demoUser
   }
 
-  // Назначаем роль "Владелец" пользователю
+  // Назначаем роль "Владелец" демо-пользователю
   const ownerRole = await prisma.role.findUnique({ where: { name: 'Владелец' } })
-  if (ownerRole && firstUser) {
+  if (ownerRole && demoUser) {
     await prisma.userRole.upsert({
-      where: { userId_tenantId: { userId: firstUser.id, tenantId: firstUser.tenantId! } },
+      where: { userId_tenantId: { userId: demoUser.id, tenantId: demoUser.tenantId! } },
       update: { roleId: ownerRole.id },
-      create: { userId: firstUser.id, roleId: ownerRole.id, tenantId: firstUser.tenantId! }
+      create: { userId: demoUser.id, roleId: ownerRole.id, tenantId: demoUser.tenantId! }
     } as any)
     console.log('✅ Role "Владелец" assigned to demo user')
   }
