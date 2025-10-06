@@ -58,7 +58,7 @@ export async function GET(
     headers.set('Cache-Control', 'public, max-age=86400');
     headers.set('Accept-Ranges', 'bytes');
     
-    return new Response(fileBuffer, { headers });
+    return new NextResponse(fileBuffer, { headers });
 
   } catch (error) {
     console.error("[content-route] Error serving file content:", error);

@@ -15,7 +15,7 @@ const assignCourseSchema = z.object({
 // POST /api/learning/courses/[id]/assign - назначение курса
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +23,7 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что курс существует и пользователь может его редактировать
@@ -116,7 +116,7 @@ export async function POST(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Неверные данные', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Неверные данные', details: error.issues }, { status: 400 });
     }
     console.error('❌ Error assigning course:', error);
     return NextResponse.json({ error: 'Ошибка назначения курса' }, { status: 500 });

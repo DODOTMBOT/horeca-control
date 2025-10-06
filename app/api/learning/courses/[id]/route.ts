@@ -13,7 +13,7 @@ const updateCourseSchema = z.object({
 // GET /api/learning/courses/[id] - получение курса
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const tenantId = currentTenantId(session);
 
     const course = await prisma.course.findFirst({
@@ -111,7 +111,7 @@ export async function GET(
 // PUT /api/learning/courses/[id] - обновление курса
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -119,7 +119,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что курс существует и пользователь может его редактировать
@@ -162,7 +162,7 @@ export async function PUT(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Неверные данные', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Неверные данные', details: error.issues }, { status: 400 });
     }
     console.error('❌ Error updating course:', error);
     return NextResponse.json({ error: 'Ошибка обновления курса' }, { status: 500 });
@@ -172,7 +172,7 @@ export async function PUT(
 // DELETE /api/learning/courses/[id] - удаление курса
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -180,7 +180,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что курс существует и пользователь может его удалить

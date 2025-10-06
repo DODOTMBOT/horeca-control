@@ -113,7 +113,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setShowCreateFolder(false);
     },
     onError: (error) => {
-      toast.error("Ошибка создания папки", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка создания папки", { description: msg });
     },
   });
 
@@ -147,7 +148,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       toast.success("Файл загружен!");
     },
     onError: (error) => {
-      toast.error("Ошибка загрузки файла", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка загрузки файла", { description: msg });
     },
   });
 
@@ -176,7 +178,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       document.body.removeChild(a);
       toast.success("Файл скачан!");
     } catch (error) {
-      toast.error("Ошибка скачивания файла", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка скачивания файла", { description: msg });
     }
   };
 
@@ -209,7 +212,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setRenameItem(null);
       setNewName("");
     } catch (error) {
-      toast.error("Ошибка переименования", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка переименования", { description: msg });
     }
   };
 
@@ -231,7 +235,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       queryClient.invalidateQueries({ queryKey: ["files"] });
       toast.success(`${type === 'folder' ? 'Папка' : 'Файл'} удален!`);
     } catch (error) {
-      toast.error("Ошибка удаления", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка удаления", { description: msg });
     }
   };
 
@@ -268,7 +273,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setMoveItem(null);
       setSelectedFolderId(null);
     } catch (error) {
-      toast.error("Ошибка перемещения", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка перемещения", { description: msg });
     }
   };
 
@@ -309,8 +315,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
     }
     
     const itemNames = Array.from(selectedItems).map(id => {
-      const folder = folders.find(f => f.id === id);
-      const file = files.find(f => f.id === id);
+      const folder = folders.find((f: any) => f.id === id);
+      const file = files.find((f: any) => f.id === id);
       return folder ? folder.name : file ? file.name : 'элемент';
     }).join(', ');
     
@@ -346,12 +352,13 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setSelectedItems(new Set());
       setSelectMode(false);
     } catch (error) {
-      toast.error("Ошибка массового удаления", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка массового удаления", { description: msg });
     }
   };
 
   const handleSelectAll = () => {
-    const allIds = [...folders.map(f => f.id), ...files.map(f => f.id)];
+    const allIds = [...folders.map((f: any) => f.id), ...files.map((f: any) => f.id)];
     setSelectedItems(new Set(allIds));
     setSelectMode(true);
   };
@@ -1013,7 +1020,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
                     <span className="font-medium">Корневая папка</span>
                   </div>
                 </div>
-                {folders.map((folder) => (
+                {folders.map((folder: any) => (
                   <div 
                     key={folder.id}
                     className={`p-2 rounded border cursor-pointer hover:bg-gray-50 ${

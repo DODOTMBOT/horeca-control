@@ -6,13 +6,13 @@ import { z } from 'zod';
 import { currentTenantId } from '@/lib/acl';
 
 const submitQuizSchema = z.object({
-  answers: z.record(z.array(z.string())) // {questionId: [answerId]}
+  answers: z.record(z.string(), z.array(z.string())) // {questionId: [answerId]}
 });
 
 // POST /api/learning/quiz/[quizId]/attempt - прохождение теста
 export async function POST(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,7 +20,7 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const quizId = params.quizId;
+    const { quizId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что тест существует и доступен

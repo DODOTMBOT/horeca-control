@@ -51,7 +51,6 @@ export default async function CatalogPage({ searchParams }: { searchParams: Reco
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Каталог курсов</h1>
         <Suspense>
-          {/* @ts-expect-error Async Server Component */}
           <CatalogContent searchParams={searchParams} />
         </Suspense>
       </div>

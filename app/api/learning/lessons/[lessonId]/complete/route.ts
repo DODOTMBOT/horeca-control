@@ -7,7 +7,7 @@ import { currentTenantId } from '@/lib/acl';
 // POST /api/learning/lessons/[lessonId]/complete - отметка урока как пройденного
 export async function POST(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const lessonId = params.lessonId;
+    const { lessonId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что урок существует и доступен

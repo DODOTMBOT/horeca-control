@@ -225,7 +225,7 @@ export function FilesContent() {
                   <FolderCard
                     key={folder.id}
                     folder={folder}
-                    onClick={() => handleFolderClick(folder.id)}
+                    onSelect={() => handleFolderClick(folder.id)}
                   />
                 ))}
               </div>
@@ -238,7 +238,6 @@ export function FilesContent() {
                   <FileCard
                     key={file.id}
                     file={file}
-                    onRefresh={fetchData}
                   />
                 ))}
               </div>
