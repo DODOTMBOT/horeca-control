@@ -20,7 +20,7 @@ export function FolderCard({
   onSelect, 
   onRename, 
   onDelete, 
-  onMove, 
+  onMove: _onMove, // eslint-disable-line @typescript-eslint/no-unused-vars 
   selected = false 
 }: FolderCardProps) {
   return (

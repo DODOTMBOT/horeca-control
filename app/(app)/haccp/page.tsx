@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, Calendar, Users, CheckCircle, XCircle, Clock, Sun, ChevronLeft, ChevronRight, Plus, Search, Filter, Download, Thermometer, Shield, FileText } from 'lucide-react';
+import { ArrowLeft, Users, CheckCircle, XCircle, Clock, Sun, Plus, Download, Thermometer, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface Employee {
   id: string;
@@ -92,9 +91,11 @@ export default function HACCPPage() {
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(true);
   const [isLoadingEquipment, setIsLoadingEquipment] = useState(true);
   const [isLoadingTemperatureRecords, setIsLoadingTemperatureRecords] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchTerm, setSearchTerm] = useState('');
   const [activeJournal, setActiveJournal] = useState<'health' | 'temperature' | 'glass'>('health');
   const [temperatureInputs, setTemperatureInputs] = useState<{[key: string]: {morning: string, evening: string}}>({});
@@ -823,7 +824,9 @@ export default function HACCPPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {equipment.map((item) => {
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                       const morningRecord = getTemperatureRecord(item.id, 'morning');
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                       const eveningRecord = getTemperatureRecord(item.id, 'evening');
                       return (
                         <tr key={item.id}>

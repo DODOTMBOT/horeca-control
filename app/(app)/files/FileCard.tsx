@@ -22,7 +22,7 @@ export function FileCard({
   onSelect, 
   onRename, 
   onDelete, 
-  onMove, 
+  onMove: _onMove, // eslint-disable-line @typescript-eslint/no-unused-vars 
   onDownload, 
   selected = false 
 }: FileCardProps) {

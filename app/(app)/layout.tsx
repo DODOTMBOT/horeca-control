@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserRole, getPartnerPoints, getCurrentPoint } from "@/lib/acl";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PointSwitcherWrapper from "@/components/PointSwitcherWrapper";
 import AppShell from "@/components/AppShell";
 

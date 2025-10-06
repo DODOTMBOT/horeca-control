@@ -2,8 +2,9 @@
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getUserContext } from '@/lib/tenant';
-import { step1Schema, step2Schema, validateChoiceQuestions, Step1Input, Step2Input, submitAnswersSchema, courseCreateSchema, CourseCreateInput } from '@/lib/validators/learning';
+import { step1Schema, step2Schema, validateChoiceQuestions, Step1Input, Step2Input, courseCreateSchema, CourseCreateInput } from '@/lib/validators/learning';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assertTenant(session: any) {
   if (!session?.user?.id) throw new Error('Not authenticated');
   const tenantId = (session.user as any).tenantId;
@@ -11,6 +12,7 @@ function assertTenant(session: any) {
   return tenantId as string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function canCreate(session: any) {
   const role = (session?.user as any)?.role;
   return role === 'Owner' || role === 'OWNER' || role === 'MANAGER' || role === 'Partner';

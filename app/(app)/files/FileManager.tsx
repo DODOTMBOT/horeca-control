@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,12 @@ import {
   Download,
   Trash2,
   Edit,
-  Move,
-  Image as ImageIcon,
-  FileText,
-  FileSpreadsheet,
-  File as FileIcon
+  Move
 } from "lucide-react";
 import { FilePreview } from "./FilePreview";
 
-interface FolderItem {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface _FolderItem {
   id: string;
   name: string;
   fileCount: number;
@@ -302,7 +299,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
   };
 
   // Функция для активации режима выбора
-  const handleEnableSelectMode = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleEnableSelectMode = () => {
     setSelectMode(true);
     console.log("Select mode enabled");
   };

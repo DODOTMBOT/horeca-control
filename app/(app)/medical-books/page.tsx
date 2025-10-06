@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, User, Calendar, AlertTriangle, CheckCircle, Clock, Search, FileText, Stethoscope } from 'lucide-react';
+import { ArrowLeft, Plus, User, AlertTriangle, CheckCircle, Clock, Search, FileText, Stethoscope } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
