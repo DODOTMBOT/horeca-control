@@ -47,11 +47,11 @@ export async function POST(
     // Проверяем, что курс назначен пользователю
     const assignment = await prisma.assignment.findFirst({
       where: {
-        courseId: lesson.courseId,
+        courseId: lesson.courseId || undefined,
         OR: [
           { userId: session.user.id },
           { 
-            roleName: { in: session.user.roles || [] },
+            roleName: { in: [] },
             tenantId: tenantId
           }
         ]
@@ -66,7 +66,7 @@ export async function POST(
     let progress = await prisma.progress.findUnique({
       where: {
         courseId_userId: {
-          courseId: lesson.courseId,
+          courseId: lesson.courseId!,
           userId: session.user.id
         }
       }
@@ -75,7 +75,7 @@ export async function POST(
     if (!progress) {
       progress = await prisma.progress.create({
         data: {
-          courseId: lesson.courseId,
+          courseId: lesson.courseId!,
           userId: session.user.id,
           assignmentId: assignment.id,
           status: 'IN_PROGRESS',

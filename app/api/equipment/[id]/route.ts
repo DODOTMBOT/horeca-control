@@ -57,7 +57,7 @@ export async function DELETE(
 // PUT - Обновить оборудование
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -66,6 +66,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id: equipmentId } = await params;
     const userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
@@ -75,7 +76,7 @@ export async function PUT(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const equipmentId = id;
+    // equipmentId уже определен выше
     const body = await req.json();
     const { type, zone, description, serialNumber, status } = body;
 

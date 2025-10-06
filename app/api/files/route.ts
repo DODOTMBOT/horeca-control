@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
             contains: search,
             mode: "insensitive"
           }
-        }),
+        } as any),
         OR: [
           { createdById: session.user.id }, // Создатель папки
           {

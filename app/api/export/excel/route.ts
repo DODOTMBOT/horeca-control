@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Создаем массив дат для периода
-    const dates = [];
+    const dates: Date[] = [];
     const currentDate = new Date(start);
     while (currentDate <= end) {
       dates.push(new Date(currentDate));

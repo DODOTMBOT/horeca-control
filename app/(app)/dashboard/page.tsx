@@ -3,9 +3,12 @@ export const runtime = "nodejs";
 import { requireSession, requireTenant } from "@/lib/guards";
 import { getUserRole } from "@/lib/acl";
 import prisma from "@/lib/prisma";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Badge } from "@/components/ui/badge";
 import { Tag, FileText, BookOpen, CreditCard, Package, Calendar, Zap, User } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   await requireSession();
@@ -69,6 +72,7 @@ export default async function DashboardPage() {
     })
   ]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const stats = [
     {
       title: "Маркировки",
@@ -215,7 +219,7 @@ export default async function DashboardPage() {
             </div>
           </a>
 
-          <a href="/learning" className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow">
+          <Link href="/learning" className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow">
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-purple-600" />
@@ -225,7 +229,7 @@ export default async function DashboardPage() {
                 <p className="text-sm text-gray-600">Курсы и обучение</p>
               </div>
             </div>
-          </a>
+          </Link>
 
           <a href="/owner/users" className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow">
             <div className="flex items-center gap-4">

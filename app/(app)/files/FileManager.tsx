@@ -329,7 +329,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
     try {
       // Удаляем все выбранные элементы
       const deletePromises = Array.from(selectedItems).map(async (id) => {
-        const isFolder = folders.some(f => f.id === id);
+        const isFolder = folders.some((f: any) => f.id === id);
         const endpoint = isFolder 
           ? `/api/files/folders/${id}` 
           : `/api/files/${id}`;
@@ -689,7 +689,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
                   checked={selectedItems.size > 0 && selectedItems.size === (filteredFolders.length + processedFiles.length)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      const allIds = [...filteredFolders.map(f => f.id), ...processedFiles.map(f => f.id)];
+                      const allIds = [...filteredFolders.map((f: any) => f.id), ...processedFiles.map((f: any) => f.id)];
                       setSelectedItems(new Set(allIds));
                       setSelectMode(true);
                     } else {

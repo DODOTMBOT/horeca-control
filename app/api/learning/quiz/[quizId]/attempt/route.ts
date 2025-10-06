@@ -158,7 +158,7 @@ export async function POST(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Неверные данные', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Неверные данные', details: error.issues }, { status: 400 });
     }
     console.error('❌ Error submitting quiz:', error);
     return NextResponse.json({ error: 'Ошибка прохождения теста' }, { status: 500 });
