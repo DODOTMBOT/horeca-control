@@ -58,7 +58,7 @@ export async function PATCH(
     }
 
     // Удаляем все существующие роли пользователя
-    await prisma.UserRole.deleteMany({
+    await prisma.userRole.deleteMany({
       where: { 
         userId,
         tenantId: userRecord.tenantId
@@ -66,7 +66,7 @@ export async function PATCH(
     })
 
     // Добавляем новую роль
-    await prisma.UserRole.create({
+    await prisma.userRole.create({
       data: {
         userId,
         roleId: roleRecord.id,

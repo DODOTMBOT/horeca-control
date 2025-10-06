@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { assignUserRoleAction } from "@/actions/owner/users";
 
 type UserDTO = {
   id: string;
@@ -16,33 +18,37 @@ type AssignRoleDialogProps = {
   user: UserDTO;
   isOpen: boolean;
   onClose: () => void;
+  currentTenantId: string;
 };
 
-export default function AssignRoleDialog({ user, isOpen, onClose }: AssignRoleDialogProps) {
-  const qc = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState(user?.roles?.[0] || "");
+export default function AssignRoleDialog({ user, isOpen, onClose, currentTenantId }: AssignRoleDialogProps) {
+  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<string>(user?.roles?.[0] || "Owner");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const assignRoleMutation = useMutation({
-    mutationFn: async (roleName: string) => {
-      const res = await fetch("/api/owner/users/assign-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          roleName,
-          tenantId: user.tenant || null
-        }),
+  const handleAssignRole = async () => {
+    if (!selectedRole || selectedRole === user?.roles?.[0]) return;
+    
+    setIsLoading(true);
+    try {
+      await assignUserRoleAction({
+        userId: user.id,
+        tenantId: currentTenantId,
+        roleName: selectedRole
       });
-      if (!res.ok) throw new Error("Failed to assign role");
-      return res.json();
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["users"] });
+      
+      toast.success("Роль успешно назначена");
+      router.refresh();
       onClose();
-    },
-  });
+    } catch (error) {
+      console.error("Error assigning role:", error);
+      toast.error(error instanceof Error ? error.message : "Ошибка при назначении роли");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const availableRoles = ["Owner", "Partner", "Point"];
+  const availableRoles = ["Owner", "Partner", "Point", "Manager"];
 
   if (!isOpen || !user) return null;
 
@@ -116,11 +122,11 @@ export default function AssignRoleDialog({ user, isOpen, onClose }: AssignRoleDi
             Отмена
           </button>
           <button 
-            onClick={() => assignRoleMutation.mutate(selectedRole)}
-            disabled={assignRoleMutation.isPending || selectedRole === user?.roles?.[0]}
+            onClick={handleAssignRole}
+            disabled={isLoading || selectedRole === user?.roles?.[0]}
             className="rounded-lg bg-neutral-900 px-4 py-2 text-white hover:shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {assignRoleMutation.isPending ? "Назначение..." : "Назначить роль"}
+            {isLoading ? "Назначение..." : "Назначить роль"}
           </button>
         </div>
       </motion.div>

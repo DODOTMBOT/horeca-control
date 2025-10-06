@@ -68,9 +68,25 @@ async function createPointUser() {
           }]
         }
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        pointId: true,
+        tenantId: true,
         UserRole: {
-          include: { role: true }
+          select: {
+            id: true,
+            userId: true,
+            roleId: true,
+            tenantId: true,
+            role: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         }
       }
     });

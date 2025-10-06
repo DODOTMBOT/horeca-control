@@ -19,9 +19,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем роли пользователя
-    const userRoles = await prisma.UserRole.findMany({
+    const userRoles = await prisma.userRole.findMany({
       where: { userId: session.user.id },
-      include: { role: true }
+      select: {
+        id: true,
+        userId: true,
+        roleId: true,
+        tenantId: true,
+        role: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
     });
 
     const roleIds = userRoles.map(ur => ur.roleId);

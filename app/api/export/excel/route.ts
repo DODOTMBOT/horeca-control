@@ -56,7 +56,18 @@ export async function POST(req: NextRequest) {
         pointId: true,
         point: { select: { name: true } },
         UserRole: {
-          include: { role: true }
+          select: {
+        id: true,
+        userId: true,
+        roleId: true,
+        tenantId: true,
+        role: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
         }
       },
       orderBy: { name: "asc" }

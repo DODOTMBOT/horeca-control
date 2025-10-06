@@ -37,15 +37,25 @@ export async function requireTenant() {
 export async function hasRole(role: string) {
   const session = await requireTenant()
   
-  const userRole = await prisma.UserRole.findFirst({
+  const userRole = await prisma.userRole.findFirst({
     where: {
       userId: session.user.id,
       role: {
         name: role
       }
     },
-    include: {
-      role: true
+    select: {
+      id: true,
+      userId: true,
+      roleId: true,
+      tenantId: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+          permissions: true
+        }
+      }
     }
   })
   
@@ -59,7 +69,7 @@ export async function hasRole(role: string) {
 export async function hasAnyRole(roles: string[]) {
   const session = await requireTenant()
   
-  const userRoles = await prisma.UserRole.findMany({
+  const userRoles = await prisma.userRole.findMany({
     where: {
       userId: session.user.id,
       role: {
@@ -68,8 +78,18 @@ export async function hasAnyRole(roles: string[]) {
         }
       }
     },
-    include: {
-      role: true
+    select: {
+      id: true,
+      userId: true,
+      roleId: true,
+      tenantId: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+          permissions: true
+        }
+      }
     }
   })
   

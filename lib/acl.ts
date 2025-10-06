@@ -9,8 +9,13 @@ export async function getUserRole(userId: string, tenantId?: string | null): Pro
     select: { 
       isPlatformOwner: true,
       UserRole: {
-        include: {
-          role: true
+        where: tenantId ? { tenantId } : undefined,
+        select: {
+          role: {
+            select: {
+              name: true
+            }
+          }
         }
       }
     }

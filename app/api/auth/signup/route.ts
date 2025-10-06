@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
       console.log("[signup] Found role, assigning to user")
       // Назначаем роль с обязательным tenantId
-      await tx.UserRole.create({
+      await tx.userRole.create({
         data: {
           userId: user.id,
           roleId: role.id,

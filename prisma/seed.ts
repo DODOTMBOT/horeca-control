@@ -66,7 +66,7 @@ async function main() {
   // Назначаем роль "Владелец" пользователю
   const ownerRole = await prisma.role.findUnique({ where: { name: 'Владелец' } })
   if (ownerRole && firstUser) {
-    await prisma.UserRole.upsert({
+    await prisma.userRole.upsert({
       where: { userId_tenantId: { userId: firstUser.id, tenantId: firstUser.tenantId! } },
       update: { roleId: ownerRole.id },
       create: { userId: firstUser.id, roleId: ownerRole.id, tenantId: firstUser.tenantId! }

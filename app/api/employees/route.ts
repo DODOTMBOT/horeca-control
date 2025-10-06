@@ -51,10 +51,30 @@ export async function GET(req: NextRequest) {
           }
         }
       },
-      include: {
-        point: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        pointId: true,
+        createdAt: true,
+        point: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         UserRole: {
-          include: { role: true }
+          select: {
+            id: true,
+            roleId: true,
+            tenantId: true,
+            role: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         }
       },
       orderBy: { name: "asc" }
@@ -181,10 +201,30 @@ export async function POST(req: NextRequest) {
     // Возвращаем созданного сотрудника
     const createdEmployee = await prisma.user.findUnique({
       where: { id: newUser.id },
-      include: {
-        point: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        pointId: true,
+        createdAt: true,
+        point: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         UserRole: {
-          include: { role: true }
+          select: {
+            id: true,
+            roleId: true,
+            tenantId: true,
+            role: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         }
       }
     });

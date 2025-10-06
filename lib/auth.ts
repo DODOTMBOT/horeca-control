@@ -65,10 +65,26 @@ export const authOptions: NextAuthOptions = {
       try {
         const dbUser = await prisma.user.findUnique({
           where: { id: userId },
-          include: {
-            tenant: true,
-            point: true
-          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            tenantId: true,
+            isPlatformOwner: true,
+            pointId: true,
+            tenant: { select: { id: true, name: true } },
+            UserRole: {
+              where: token?.tenantId ? { tenantId: token.tenantId as string } : undefined,
+              select: { 
+                role: {
+                  select: {
+                    name: true
+                  }
+                }, 
+                tenantId: true 
+              }
+            }
+          }
         });
         
         if (!dbUser) {

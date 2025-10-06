@@ -41,8 +41,27 @@ export async function POST(req: Request) {
         }],
       },
     },
-    include: { 
-      UserRole: { include: { role: true } } 
+    select: { 
+      id: true,
+      email: true,
+      name: true,
+      tenantId: true,
+      pointId: true,
+      isPlatformOwner: true,
+      createdAt: true,
+      UserRole: { 
+        select: { 
+          id: true,
+          roleId: true,
+          tenantId: true,
+          role: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        } 
+      } 
     },
   });
 

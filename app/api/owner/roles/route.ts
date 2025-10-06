@@ -21,9 +21,18 @@ export async function GET() {
 
     // Получаем все роли
     const roles = await prisma.role.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true,
+        createdAt: true,
+        updatedAt: true,
         userRoles: {
-          include: {
+          select: {
+            id: true,
+            userId: true,
+            roleId: true,
+            tenantId: true,
             user: {
               select: {
                 id: true,
