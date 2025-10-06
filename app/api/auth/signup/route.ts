@@ -1,5 +1,7 @@
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
 
@@ -37,32 +39,41 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12)
     console.log("[signup] Password hashed successfully")
 
-    // Проверяем, является ли пользователь платформенным владельцем
-    const isPlatformOwner = email === process.env.PLATFORM_OWNER_EMAIL
-    console.log("[signup] Is platform owner:", isPlatformOwner)
+    // Проверяем, есть ли уже owner пользователь в системе
+    const existingOwner = await prisma.user.findFirst({
+      where: { isPlatformOwner: true }
+    })
+    const isFirstUser = !existingOwner
+    console.log("[signup] Is first user (owner):", isFirstUser)
+
+    // Получаем или создаем tenant
+    let tenantId: string | null = null
+    if (isFirstUser) {
+      // Для первого пользователя (owner) создаем новый tenant
+      const tenant = await prisma.tenant.create({
+        data: {
+          name: `${email.split('@')[0]}-org`,
+          email: email,
+        }
+      })
+      tenantId = tenant.id
+      console.log("[signup] Created new tenant with ID:", tenantId)
+    } else {
+      // Для остальных пользователей создаем новый tenant (они будут Partner)
+      const tenant = await prisma.tenant.create({
+        data: {
+          name: `${email.split('@')[0]}-org`,
+          email: email,
+        }
+      })
+      tenantId = tenant.id
+      console.log("[signup] Created new tenant for partner with ID:", tenantId)
+    }
 
     // Выполняем всё в транзакции
     await prisma.$transaction(async (tx) => {
       console.log("[signup] Starting transaction for email:", email)
       
-      // Если не платформенный владелец, сначала создаем tenant
-      let tenantId = null
-      if (!isPlatformOwner) {
-        console.log("[signup] Creating tenant for non-platform owner")
-        
-        // Создаем tenant
-        const tenant = await tx.tenants.create({
-          data: {
-            id: `tenant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            name: `${email.split('@')[0]}-org`,
-            email: email,
-            updatedAt: new Date(),
-          }
-        })
-        tenantId = tenant.id
-        console.log("[signup] Tenant created with ID:", tenantId)
-      }
-
       // Создаем пользователя
       console.log("[signup] Creating user")
       const user = await tx.user.create({
@@ -70,42 +81,37 @@ export async function POST(request: NextRequest) {
           email,
           name: name || email.split('@')[0],
           passwordHash,
-          isPlatformOwner,
-          tenantId: tenantId,
+          isPlatformOwner: isFirstUser, // Первый пользователь становится платформенным владельцем
+          tenantId: tenantId, // Обязательное поле tenantId
         }
       })
       console.log("[signup] User created with ID:", user.id)
 
-      // Если не платформенный владелец, назначаем роль OWNER
-      if (!isPlatformOwner && tenantId) {
-        console.log("[signup] Looking for OWNER role")
-        
-        // Находим или создаем роль OWNER
-        let ownerRole = await tx.role.findUnique({
-          where: { name: "OWNER" }
-        })
+      // Определяем роль для назначения
+      let roleName = isFirstUser ? "Owner" : "Partner"
 
-        if (!ownerRole) {
-          console.log("[signup] Creating OWNER role")
-          ownerRole = await tx.role.create({
-            data: {
-              name: "OWNER",
-              description: "Organization owner with full access",
-              updatedAt: new Date()
-            }
-          })
-        }
+      console.log("[signup] Looking for role:", roleName)
+      
+      // Находим роль
+      const role = await tx.role.findUnique({
+        where: { name: roleName }
+      })
 
-        console.log("[signup] Found/created OWNER role, assigning to user")
-        // Назначаем роль OWNER
-        await tx.userRole.create({
-          data: {
-            userId: user.id,
-            roleId: ownerRole.id
-          }
-        })
-        console.log("[signup] Role assigned successfully")
+      if (!role) {
+        console.log("[signup] Role not found:", roleName)
+        throw new Error(`Role ${roleName} not found`)
       }
+
+      console.log("[signup] Found role, assigning to user")
+      // Назначаем роль с обязательным tenantId
+      await tx.UserRole.create({
+        data: {
+          userId: user.id,
+          roleId: role.id,
+          tenantId: tenantId // Обязательное поле tenantId
+        }
+      })
+      console.log("[signup] Role assigned successfully")
     })
 
     console.log("✅ Auth working - User registered:", email)

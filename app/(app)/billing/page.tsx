@@ -1,5 +1,7 @@
+export const runtime = "nodejs";
+
 import { requireSession, requireTenant } from "@/lib/guards"
-import { prisma } from "@/lib/prisma"
+import prisma from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -60,15 +62,15 @@ export default async function BillingPage() {
   const periodEnd = subscription?.currentPeriodEnd
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Биллинг
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Управление подпиской и платежами
-        </p>
-      </div>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Биллинг</h1>
+          <p className="text-gray-600">Управление подпиской и платежами</p>
+        </div>
+
+        <div className="space-y-6">
 
       {/* Текущая подписка */}
       <Card>
@@ -203,6 +205,8 @@ export default async function BillingPage() {
           </CardContent>
         </Card>
       )}
+        </div>
+      </div>
     </div>
   )
 }

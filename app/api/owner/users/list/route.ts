@@ -1,0 +1,37 @@
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  const userRole = (session?.user as Record<string, unknown>)?.role as string;
+  
+  // Только Owner может получить список всех пользователей
+  if (userRole !== "Owner") {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
+  const users = await prisma.user.findMany({
+    include: {
+      UserRole: { 
+        include: { role: true } 
+      },
+      tenant: {
+        select: { name: true }
+      }
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const data = users.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    roles: u.UserRole.map(ur => ur.role?.name).filter(Boolean) as string[],
+    tenant: u.tenant?.name || null,
+    isPlatformOwner: u.isPlatformOwner,
+  }));
+
+  return NextResponse.json(data);
+}

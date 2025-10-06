@@ -1,34 +1,17 @@
-import { requireSession } from "@/lib/guards";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+'use client';
 
-export default async function LearningPage() {
-  await requireSession();
+import { Card } from '@/components/ui/card';
 
+export default function LearningPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Обучение</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Система обучения сотрудников и управления знаниями
-        </p>
+    <div className="p-8">
+      <div className="max-w-3xl mx-auto text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Обучение</h1>
+        <Card className="p-10">
+          <p className="text-gray-700 text-lg">Раздел в разработке.</p>
+          <p className="text-gray-500 mt-2">Скоро здесь появятся курсы, прогресс и каталог.</p>
+        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Раздел в разработке</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600 dark:text-gray-400">
-          Функционал обучения будет добавлен в ближайшее время. Здесь вы сможете:
-        </p>
-        <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
-          <li>• Создавать курсы и уроки</li>
-          <li>• Назначать обучение сотрудникам</li>
-          <li>• Отслеживать прогресс обучения</li>
-          <li>• Проводить тестирования</li>
-        </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }

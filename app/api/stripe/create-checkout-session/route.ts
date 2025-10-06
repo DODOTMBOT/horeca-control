@@ -1,10 +1,16 @@
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    if (!stripe) {
+      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 })
+    }
+
     const session = await auth()
     
     if (!session?.user?.email) {

@@ -4,9 +4,19 @@ import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogIn, LogOut, User, UserPlus } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export function AuthButtons() {
+  const [mounted, setMounted] = useState(false)
   const { data: session, status } = useSession()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <Button disabled>Загрузка...</Button>
+  }
 
   if (status === "loading") {
     return <Button disabled>Загрузка...</Button>

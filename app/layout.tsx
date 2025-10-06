@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/session-provider";
+import AppProviders from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HoReCa SaaS",
-  description: "SaaS platform for HoReCa industry",
+  title: "Quant IS",
+  description: "HoReCa management platform",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#0b0b0f",
 };
 
 export default function RootLayout({
@@ -24,12 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-gray-50 text-gray-900 antialiased`}
       >
         <AuthProvider>
-          {children}
+          <AppProviders>
+            {children}
+          </AppProviders>
         </AuthProvider>
       </body>
     </html>

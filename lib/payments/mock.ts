@@ -1,5 +1,7 @@
+export const runtime = "nodejs";
+
 import { PaymentProvider, PlanKey } from "./types"
-import { prisma } from "@/lib/prisma"
+import prisma from "@/lib/prisma"
 
 export class MockPaymentProvider implements PaymentProvider {
   name = "mock" as const

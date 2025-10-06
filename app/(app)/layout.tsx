@@ -1,16 +1,35 @@
-import { AppNav } from "@/components/AppNav"
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getUserRole, getPartnerPoints, getCurrentPoint } from "@/lib/acl";
+import PointSwitcherWrapper from "@/components/PointSwitcherWrapper";
+import AppShell from "@/components/AppShell";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await getServerSession(authOptions);
+  const userRole = session?.user?.id && session?.user?.tenantId ? await getUserRole(session.user.id, session.user.tenantId) : null;
+  
+  // Получаем точки для партнеров
+  const partnerPoints = session?.user?.id && userRole === "Partner" 
+    ? await getPartnerPoints(session.user.id) 
+    : [];
+  
+  // Получаем текущую точку
+  const currentPoint = session?.user?.id && userRole === "Point"
+    ? await getCurrentPoint(session.user.id)
+    : null;
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AppNav />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {children}
-      </main>
-    </div>
-  )
+    <AppShell 
+      session={session}
+      userRole={userRole}
+      partnerPoints={partnerPoints}
+      currentPoint={currentPoint}
+    >
+      {children}
+    </AppShell>
+  );
 }

@@ -27,8 +27,14 @@ function SignInForm() {
     setError("")
 
     try {
+      // Автоматически добавляем домен для логинов точек
+      let loginEmail = email
+      if (email.startsWith('point_') && !email.includes('@')) {
+        loginEmail = `${email}@point.local`
+      }
+
       const result = await signIn("credentials", {
-        email,
+        email: loginEmail,
         password,
         redirect: false,
       })
@@ -41,6 +47,28 @@ function SignInForm() {
       }
     } catch {
       setError("Произошла ошибка при входе")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDemo = async () => {
+    setIsLoading(true)
+    setError("")
+    try {
+      const result = await signIn("credentials", {
+        email: "demo@example.com",
+        password: "demo12345",
+        redirect: false,
+      })
+      if (result?.error) {
+        setError("Не удалось войти демо-пользователем")
+      } else {
+        router.push("/learning")
+        router.refresh()
+      }
+    } catch {
+      setError("Ошибка демо-входа")
     } finally {
       setIsLoading(false)
     }
@@ -71,15 +99,19 @@ function SignInForm() {
               )}
 
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email или логин</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  placeholder="example@domain.com или point_xxxxx"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Для точек используйте: point_xxxxx@point.local
+                </p>
               </div>
 
               <div>
@@ -97,6 +129,9 @@ function SignInForm() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Войти
+              </Button>
+              <Button type="button" variant="outline" className="w-full" disabled={isLoading} onClick={handleDemo}>
+                Войти как демо
               </Button>
             </form>
 

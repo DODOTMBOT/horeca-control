@@ -1,5 +1,7 @@
+export const runtime = "nodejs";
+
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
 
 export async function requireSession() {
@@ -35,15 +37,15 @@ export async function requireTenant() {
 export async function hasRole(role: string) {
   const session = await requireTenant()
   
-  const userRole = await prisma.userRole.findFirst({
+  const userRole = await prisma.UserRole.findFirst({
     where: {
       userId: session.user.id,
-      Role: {
+      role: {
         name: role
       }
     },
     include: {
-      Role: true
+      role: true
     }
   })
   
@@ -51,23 +53,23 @@ export async function hasRole(role: string) {
     throw new Error(`User does not have role: ${role}`)
   }
   
-  return { session, role: userRole.Role }
+  return { session, role: userRole.role }
 }
 
 export async function hasAnyRole(roles: string[]) {
   const session = await requireTenant()
   
-  const userRoles = await prisma.userRole.findMany({
+  const userRoles = await prisma.UserRole.findMany({
     where: {
       userId: session.user.id,
-      Role: {
+      role: {
         name: {
           in: roles
         }
       }
     },
     include: {
-      Role: true
+      role: true
     }
   })
   
@@ -75,5 +77,5 @@ export async function hasAnyRole(roles: string[]) {
     throw new Error(`User does not have any of the required roles: ${roles.join(", ")}`)
   }
   
-  return { session, roles: userRoles.map(ur => ur.Role) }
+  return { session, roles: userRoles.map(ur => ur.role) }
 }

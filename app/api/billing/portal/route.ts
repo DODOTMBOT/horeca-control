@@ -1,7 +1,9 @@
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { getPaymentProvider } from "@/lib/payments"
-import { prisma } from "@/lib/prisma"
+import prisma from "@/lib/prisma"
 
 export async function POST(_request: NextRequest) {
   try {

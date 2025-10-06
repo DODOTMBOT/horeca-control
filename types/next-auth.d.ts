@@ -9,6 +9,7 @@ declare module "next-auth" {
       image?: string | null
       isPlatformOwner?: boolean
       tenantId?: string | null
+      pointId?: string | null
     }
   }
 }
