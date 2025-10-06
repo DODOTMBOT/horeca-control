@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Определяем фильтры в зависимости от роли
-    let whereClause: any = { tenantId };
+    const whereClause: any = { tenantId };
     
     if (userRole === "Point" && pointId) {
       whereClause.pointId = pointId;

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const userRole = await getUserRole(session.user.id, tenantId);
 
     // Определяем фильтры в зависимости от роли
-    let whereClause: any = { tenantId };
+    const whereClause: any = { tenantId };
 
     if (userRole === "Point" && pointId) {
       whereClause.pointId = pointId;

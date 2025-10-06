@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Получаем сотрудников
-    let whereClause: any = { tenantId };
+    const whereClause: any = { tenantId };
     if (userRole === "Point" && pointId) {
       whereClause.pointId = pointId;
     } else if (userRole === "Partner" && pointId) {

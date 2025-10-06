@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No tenant found" }, { status: 400 });
     }
 
-    let whereClause: any = { tenantId };
+    const whereClause: any = { tenantId };
 
     // If the user is a Point, filter employees by their specific pointId
     if (userRole === "Point" && pointId) {

@@ -22,7 +22,7 @@ async function smokeTest() {
     try {
       const permissionCount = await prisma.permission.count()
       console.log(`✅ Permission table has ${permissionCount} records`)
-    } catch (e) {
+    } catch {
       console.log('ℹ️ Permission table not found (this is OK)')
     }
     

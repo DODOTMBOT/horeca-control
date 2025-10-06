@@ -1,5 +1,5 @@
 import { SessionProvider, SessionData, SessionUser, RoleWithPermissions } from './session'
-import { Role, Tenant, Point, User } from '@prisma/client'
+import { Role, Tenant, Point } from '@prisma/client'
 
 // Мок-данные для демонстрации
 const mockTenant: Tenant = {

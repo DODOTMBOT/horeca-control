@@ -77,7 +77,7 @@ export async function POST(
 
     // Вычисляем результат
     let correctAnswers = 0;
-    let totalQuestions = quiz.questions.length;
+    const totalQuestions = quiz.questions.length;
     const questionResults: Array<{
       questionId: string;
       questionText: string;

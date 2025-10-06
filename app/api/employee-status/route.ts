@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const date = searchParams.get('date');
     const employeeId = searchParams.get('employeeId');
 
-    let whereClause: any = { tenantId };
+    const whereClause: any = { tenantId };
 
     // Фильтр по точке
     if (pointId) {
