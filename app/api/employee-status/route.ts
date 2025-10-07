@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем права на обновление статусов
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (!userRole || !["OWNER","PARTNER","POINT"].includes(userRole)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 

@@ -105,9 +105,9 @@ export const authOptions: NextAuthOptions = {
         (token as Record<string, unknown>).role = userRole; // Новая роль
         (token as Record<string, unknown>).tenantId = dbUser.tenantId ?? null;
         (token as Record<string, unknown>).pointId = dbUser.pointId ?? null;
-        (token as Record<string, unknown>).isPlatformOwner = userRole === "Owner";
+        (token as Record<string, unknown>).isPlatformOwner = userRole === "OWNER";
         
-        console.log('✅ JWT token updated:', { role: userRole, roles, isPlatformOwner: userRole === "Owner" });
+        console.log('✅ JWT token updated:', { role: userRole, roles, isPlatformOwner: userRole === "OWNER" });
         return token;
       } catch (error) {
         console.error('❌ Error in JWT callback:', error);
@@ -117,19 +117,19 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log('🔧 Session callback called:', { token: token.sub, role: (token as any).role });
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       if (!session.user) session.user = {} as any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).id = token.sub;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).roles = (token as any).roles || [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).role = (token as any).role; // Новая роль
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).tenantId = (token as any).tenantId ?? null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).pointId = (token as any).pointId ?? null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (session.user as any).isPlatformOwner = !!(token as any).isPlatformOwner;
       
       console.log('✅ Session updated:', { 

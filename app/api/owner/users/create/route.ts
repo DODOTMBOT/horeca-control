@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const userRole = (session?.user as Record<string, unknown>)?.role as string;
   
   // Только Owner может создавать пользователей
-  if (userRole !== "Owner") {
+  if (userRole !== "OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       tenantId: tenantId || null,
       UserRole: {
         create: [{ 
-          role: { connect: { name: role || "Point" } }, 
+          role: { connect: { name: role || "POINT" } }, 
           tenantId: tenantId || null
         }],
       },

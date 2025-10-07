@@ -24,11 +24,11 @@ export async function GET(req: NextRequest) {
     const whereClause: any = { tenantId };
 
     // If the user is a Point, filter employees by their specific pointId
-    if (userRole === "Point" && pointId) {
+    if (userRole === "POINT" && pointId) {
       whereClause.pointId = pointId;
     }
     // If the user is a Partner, and has an active point selected, filter by that pointId
-    else if (userRole === "Partner" && pointId) {
+    else if (userRole === "PARTNER" && pointId) {
       whereClause.pointId = pointId;
     }
     // If Partner but no specific point selected, or Owner, show all employees in their tenant
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
           some: {
             role: {
               name: {
-                in: ["Point", "Employee"] // Assuming 'Point' users are also considered employees of a point
+                in: ["POINT", "Employee"] // Assuming 'Point' users are also considered employees of a point
               }
             }
           }
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем права на создание сотрудников
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
@@ -146,11 +146,11 @@ export async function POST(req: NextRequest) {
     let employeePointId = pointId;
     
     // Если пользователь - Owner, он может создавать сотрудников для любой точки в своем tenant
-    if (userRole === "Owner" && body.pointId) {
+    if (userRole === "OWNER" && body.pointId) {
       employeePointId = body.pointId;
     }
     // Если пользователь - Partner, он может создавать сотрудников только для своих точек
-    else if (userRole === "Partner" && pointId) {
+    else if (userRole === "PARTNER" && pointId) {
       // Проверяем, что точка принадлежит партнеру
       const point = await prisma.point.findFirst({
         where: {
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       }
     }
     // Если пользователь - Point, он может создавать сотрудников только для своей точки
-    else if (userRole === "Point" && pointId) {
+    else if (userRole === "POINT" && pointId) {
       employeePointId = pointId;
     }
 
@@ -180,9 +180,9 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Получаем роль "Point" (сотрудник)
+    // Получаем роль "POINT" (сотрудник)
     const pointRole = await prisma.role.findUnique({
-      where: { name: "Point" }
+      where: { name: "POINT" }
     });
 
     if (!pointRole) {

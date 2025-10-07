@@ -1,4 +1,4 @@
-import { User, Role, Tenant, Point } from '@prisma/client'
+import { User, Role, Tenant, Point, Prisma } from '@prisma/client'
 
 // Расширенные типы для сессии
 export interface SessionUser extends User {
@@ -39,6 +39,15 @@ export interface UserPermissions {
 }
 
 // Расширенная роль с разрешениями
-export interface RoleWithPermissions extends Role {
-  permissions: UserPermissions
+export interface RoleWithPermissions {
+  id: string
+  name: string
+  tenantId: string | null
+  permissions: Prisma.JsonValue
+  inheritsFrom: string | null
+  partner: string | null
+  lastModifiedAt: Date | null
+  lastModifiedBy: string | null
+  createdAt: Date
+  updatedAt: Date
 }

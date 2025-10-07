@@ -24,15 +24,15 @@ export async function POST(req: NextRequest) {
     const userRole = await getUserRole(session.user.id, tenantId);
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     // Получаем сотрудников
     const whereClause: any = { tenantId };
-    if (userRole === "Point" && pointId) {
+    if (userRole === "POINT" && pointId) {
       whereClause.pointId = pointId;
-    } else if (userRole === "Partner" && pointId) {
+    } else if (userRole === "PARTNER" && pointId) {
       whereClause.pointId = pointId;
     }
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
           some: {
             role: {
               name: {
-                in: ["Point", "Employee"]
+                in: ["POINT", "Employee"]
               }
             }
           }
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
       const row = [
         index + 1,
         employee.name || 'Без имени',
-        employee.UserRole[0]?.role?.name === "Point" ? "Сотрудник точки" : "Сотрудник",
+        employee.UserRole[0]?.role?.name === "POINT" ? "Сотрудник точки" : "Сотрудник",
         employee.point?.name || "Не назначен"
       ];
 

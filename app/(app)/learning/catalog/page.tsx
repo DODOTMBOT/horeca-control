@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
-async function CatalogContent({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
+async function CatalogContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await getServerSession(authOptions);
   const tenantId = (session?.user as any)?.tenantId || null;
-  const q = (searchParams.q as string) || '';
-  const category = (searchParams.category as string) || undefined;
-  const level = (searchParams.level as string) || undefined;
+  const sp = await searchParams;
+  const q = (sp.q as string) || '';
+  const category = (sp.category as string) || undefined;
+  const level = (sp.level as string) || undefined;
 
   const where: any = { isPublished: true };
   if (tenantId) where.tenantId = tenantId;
@@ -45,7 +46,7 @@ async function CatalogContent({ searchParams }: { searchParams: Record<string, s
   );
 }
 
-export default async function CatalogPage({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
+export default async function CatalogPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">

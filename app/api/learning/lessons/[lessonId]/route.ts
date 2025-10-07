@@ -100,7 +100,7 @@ export async function PUT(
     }
 
     // Проверяем права на редактирование
-    if (!canAuthor(session) && existingLesson.course.ownerId !== session.user.id) {
+    if (!canAuthor(session) && existingLesson.course?.ownerId !== session.user.id) {
       return NextResponse.json({ error: 'Нет прав для редактирования урока' }, { status: 403 });
     }
 
@@ -167,7 +167,7 @@ export async function DELETE(
     }
 
     // Проверяем права на удаление
-    if (!canAuthor(session) && existingLesson.course.ownerId !== session.user.id) {
+    if (!canAuthor(session) && existingLesson.course?.ownerId !== session.user.id) {
       return NextResponse.json({ error: 'Нет прав для удаления урока' }, { status: 403 });
     }
 

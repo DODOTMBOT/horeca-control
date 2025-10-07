@@ -22,7 +22,7 @@ export async function DELETE(
     const pointId = session.user.pointId;
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
@@ -31,7 +31,7 @@ export async function DELETE(
       where: {
         id: equipmentId,
         tenantId,
-        ...(userRole === "Point" && pointId && { pointId })
+        ...(userRole === "POINT" && pointId && { pointId })
       }
     });
 
@@ -72,7 +72,7 @@ export async function PUT(
     const pointId = session.user.pointId;
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
@@ -85,7 +85,7 @@ export async function PUT(
       where: {
         id: equipmentId,
         tenantId,
-        ...(userRole === "Point" && pointId && { pointId })
+        ...(userRole === "POINT" && pointId && { pointId })
       }
     });
 

@@ -57,11 +57,11 @@ export async function POST(
     // Проверяем, что курс назначен пользователю
     const assignment = await prisma.assignment.findFirst({
       where: {
-        courseId: quiz.courseId,
+        courseId: quiz.courseId ?? "",
         OR: [
           { userId: session.user.id },
           { 
-            roleName: { in: session.user.roles || [] },
+            roleName: { in: [] },
             tenantId: tenantId
           }
         ]
@@ -128,7 +128,7 @@ export async function POST(
       const progress = await tx.progress.findUnique({
         where: {
           courseId_userId: {
-            courseId: quiz.courseId,
+            courseId: quiz.courseId ?? "",
             userId: session.user.id
           }
         }

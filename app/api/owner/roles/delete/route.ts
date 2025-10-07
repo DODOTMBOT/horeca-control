@@ -8,7 +8,7 @@ export async function DELETE(req: Request) {
   const userRole = (session?.user as Record<string, unknown>)?.role as string;
   
   // Только Owner может удалять роли
-  if (userRole !== "Owner") {
+  if (userRole !== "OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -37,7 +37,7 @@ export async function DELETE(req: Request) {
   }
 
   // Нельзя удалить базовые роли
-  const baseRoles = ["Owner", "Partner", "Point"];
+  const baseRoles = ["OWNER", "PARTNER", "POINT"];
   if (baseRoles.includes(existingRole.name)) {
     return NextResponse.json({ 
       error: "Cannot delete base system roles" 

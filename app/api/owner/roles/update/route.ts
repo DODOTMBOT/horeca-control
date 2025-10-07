@@ -8,7 +8,7 @@ export async function PUT(req: Request) {
   const userRole = (session?.user as Record<string, unknown>)?.role as string;
   
   // Только Owner может обновлять роли
-  if (userRole !== "Owner") {
+  if (userRole !== "OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

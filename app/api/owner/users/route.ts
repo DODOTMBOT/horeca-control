@@ -22,11 +22,6 @@ export async function GET() {
     // Получаем всех пользователей с их ролями
     const users = await prisma.user.findMany({
       include: {
-        roles: {
-          include: {
-            role: true
-          }
-        },
         tenant: true
       },
       orderBy: {
@@ -41,7 +36,7 @@ export async function GET() {
       email: user.email,
       isPlatformOwner: user.isPlatformOwner,
       tenantName: user.tenant?.name || null,
-      roleName: user.isPlatformOwner ? "OWNER" : user.roles[0]?.role.name || "Нет роли",
+      roleName: user.isPlatformOwner ? "OWNER" : "Нет роли",
       createdAt: user.createdAt
     }))
 

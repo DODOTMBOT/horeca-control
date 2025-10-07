@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
     // Определяем фильтры в зависимости от роли
     const whereClause: any = { tenantId };
 
-    if (userRole === "Point" && pointId) {
+    if (userRole === "POINT" && pointId) {
       whereClause.pointId = pointId;
-    } else if (userRole === "Partner") {
+    } else if (userRole === "PARTNER") {
       if (pointId) {
         whereClause.pointId = pointId;
       } else {

@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const userRole = (session?.user as Record<string, unknown>)?.role as string;
   
   // Только Partner может создавать точки
-  if (userRole !== "Partner") {
+  if (userRole !== "PARTNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
           pointId: point.id,
           UserRole: {
             create: [{
-              role: { connect: { name: "Point" } },
+              role: { connect: { name: "POINT" } },
               tenantId
             }]
           }

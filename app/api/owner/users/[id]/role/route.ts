@@ -18,7 +18,7 @@ export async function PATCH(
 
     const userRole = await getUserRole(session.user.id, session.user.tenantId!)
     
-    if (!hasRole(userRole, "Владелец") && !session.user.isPlatformOwner) {
+    if (!hasRole(userRole, "OWNER") && !session.user.isPlatformOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

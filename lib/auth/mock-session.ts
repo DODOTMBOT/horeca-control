@@ -1,107 +1,105 @@
-import { SessionProvider, SessionData, SessionUser, RoleWithPermissions } from './session'
-import { Role, Tenant, Point } from '@prisma/client'
+import { SessionProvider, SessionData, SessionUser } from './session'
+import { Role, Tenant, Point, Prisma } from '@prisma/client'
 
 // Мок-данные для демонстрации
 const mockTenant: Tenant = {
-  id: 'mock-tenant-id',
-  name: 'Demo Organization',
-  email: 'owner@demo.local',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}
+  id: "t_dev", 
+  name: "Dev Tenant", 
+  email: "tenant@example.com",
+  isActive: true, 
+  region: null, 
+  createdAt: new Date(), 
+  updatedAt: new Date()
+};
 
 const mockPoint: Point = {
-  id: 'mock-point-id',
-  name: 'Demo Point',
-  address: 'Demo Address',
-  tenantId: mockTenant.id,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}
+  id: "p_dev", 
+  name: "Dev Point", 
+  email: null, 
+  phone: null,
+  address: null, 
+  tenantId: mockTenant.id, 
+  isActive: true,
+  createdAt: new Date(), 
+  updatedAt: new Date()
+};
 
-const mockRole: RoleWithPermissions = {
-  id: 'mock-role-id',
-  name: 'OWNER',
-  permissions: {
-    all: true,
-    manageUsers: true,
-    manageRoles: true,
-    manageBilling: true,
-    labeling: true,
-    files: true,
-    learning: true,
-    platformOwner: true,
+const mockRole: Role = {
+  id: "r_owner", 
+  name: "OWNER", 
+  tenantId: mockTenant.id,
+  permissions: {} as Prisma.JsonValue, 
+  inheritsFrom: null, 
+  partner: null,
+  lastModifiedAt: null, 
+  lastModifiedBy: null,
+  createdAt: new Date(), 
+  updatedAt: new Date()
+};
+
+const mockSessionData: SessionData = {
+  user: {
+    id: "u_dev",
+    name: "Dev",
+    email: "owner@demo.local",
+    passwordHash: "mock-hash",
+    tenantId: mockTenant.id,
+    pointId: mockPoint.id,
+    isPlatformOwner: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    roles: [{ ...mockRole, tenant: mockTenant }],
+    currentTenant: mockTenant,
+    currentPoint: mockPoint,
   },
-  tenantId: mockTenant.id,
-  partner: 'Demo Partner',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}
-
-const mockUser: SessionUser = {
-  id: 'mock-user-id',
-  email: 'owner@demo.local',
-  name: 'Demo Owner',
-  passwordHash: 'mock-hash',
-  tenantId: mockTenant.id,
-  pointId: mockPoint.id,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  roles: [mockRole],
-  currentTenant: mockTenant,
-  currentPoint: mockPoint,
-}
-
-const mockSession: SessionData = {
-  user: mockUser,
   isPlatformOwner: true,
   isAuthenticated: true,
-}
+};
 
 export class MockSessionProvider implements SessionProvider {
   async getSession(): Promise<SessionData | null> {
-    return mockSession
+    return mockSessionData
   }
 
   async requireSession(): Promise<SessionData> {
-    return mockSession
+    return mockSessionData
   }
 
   async requirePlatformOwner(): Promise<SessionData> {
-    if (!mockSession.isPlatformOwner) {
+    if (!mockSessionData.isPlatformOwner) {
       throw new Error('Platform owner access required')
     }
-    return mockSession
+    return mockSessionData
   }
 
   async requireTenant(): Promise<SessionData & { tenant: Tenant }> {
-    if (!mockSession.user.currentTenant) {
+    if (!mockSessionData.user.currentTenant) {
       throw new Error('Tenant access required')
     }
     return {
-      ...mockSession,
-      tenant: mockSession.user.currentTenant,
+      ...mockSessionData,
+      tenant: mockSessionData.user.currentTenant,
     }
   }
 
   async hasRole(roleName: string): Promise<{ session: SessionData; role: Role } | null> {
-    const role = mockSession.user.roles.find(r => r.name === roleName)
+    const role = mockSessionData.user.roles.find((r: any) => r.name === roleName)
     if (!role) {
       return null
     }
     return {
-      session: mockSession,
+      session: mockSessionData,
       role: role,
     }
   }
 
   async hasAnyRole(roleNames: string[]): Promise<{ session: SessionData; roles: Role[] } | null> {
-    const roles = mockSession.user.roles.filter(r => roleNames.includes(r.name))
+    const roles = mockSessionData.user.roles.filter((r: any) => roleNames.includes(r.name))
     if (roles.length === 0) {
       return null
     }
     return {
-      session: mockSession,
+      session: mockSessionData,
       roles: roles,
     }
   }

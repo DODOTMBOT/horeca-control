@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const userRole = await getUserRole(session.user.id);
     console.log('🔄 Switch point request:', { userId: session.user.id, userRole, pointId });
     
-    if (userRole !== 'Partner') {
+    if (userRole !== 'PARTNER') {
       return NextResponse.json({ error: 'Only partners can switch points' }, { status: 403 });
     }
 

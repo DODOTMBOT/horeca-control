@@ -8,7 +8,7 @@ export async function GET() {
   const userRole = (session?.user as Record<string, unknown>)?.role as string;
   
   // Только Partner может получать список своих точек
-  if (userRole !== "Partner") {
+  if (userRole !== "PARTNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

@@ -14,12 +14,12 @@ export default async function AppLayout({
   const userRole = session?.user?.id && session?.user?.tenantId ? await getUserRole(session.user.id, session.user.tenantId) : null;
   
   // Получаем точки для партнеров
-  const partnerPoints = session?.user?.id && userRole === "Partner" 
+  const partnerPoints = session?.user?.id && userRole === "PARTNER" 
     ? await getPartnerPoints(session.user.id) 
     : [];
   
   // Получаем текущую точку
-  const currentPoint = session?.user?.id && userRole === "Point"
+  const currentPoint = session?.user?.id && userRole === "POINT"
     ? await getCurrentPoint(session.user.id)
     : null;
 

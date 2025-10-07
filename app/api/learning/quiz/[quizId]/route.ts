@@ -53,11 +53,11 @@ export async function GET(
     // Проверяем, что курс назначен пользователю
     const assignment = await prisma.assignment.findFirst({
       where: {
-        courseId: quiz.courseId,
+        courseId: quiz.courseId ?? "",
         OR: [
           { userId: session.user.id },
           { 
-            roleName: { in: session.user.roles || [] },
+            roleName: { in: [] },
             tenantId: tenantId
           }
         ]
