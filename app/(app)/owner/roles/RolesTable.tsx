@@ -2,6 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { AppRole } from "@prisma/client";
+import { MENU } from "@/lib/menu.config";
 
 type RoleDTO = {
   id: string;
@@ -21,11 +23,20 @@ async function fetchRoles(): Promise<RoleDTO[]> {
   return res.json();
 }
 
+type PageAccessItem = {
+  slug: string;
+  label: string;
+  system?: boolean;
+  allowed: boolean;
+};
+
 export default function RolesTable() {
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleDTO | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingAccess, setEditingAccess] = useState<{ role: AppRole; tenantId: string } | null>(null);
+  const [accessItems, setAccessItems] = useState<PageAccessItem[] | null>(null);
   
   const { data, isLoading } = useQuery({ 
     queryKey: ["roles"], 
@@ -77,6 +88,41 @@ export default function RolesTable() {
   );
 
   const baseRoles = ["Owner", "Partner", "Point"];
+
+  // Функции для работы с доступами
+  async function openAccessEditor(role: AppRole, tenantId: string) {
+    try {
+      const url = `/api/roles/pages?tenantId=${tenantId}&role=${role}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const data = await res.json();
+      setAccessItems(data.items);
+      setEditingAccess({ role, tenantId });
+    } catch (error) {
+      console.error("Failed to load page access:", error);
+    }
+  }
+
+  async function saveAccess() {
+    if (!editingAccess || !accessItems) return;
+    
+    try {
+      const res = await fetch(`/api/roles/pages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          tenantId: editingAccess.tenantId, 
+          role: editingAccess.role, 
+          updates: accessItems.map(i => ({ slug: i.slug, allowed: i.allowed })) 
+        }),
+      });
+      if (res.ok) {
+        setEditingAccess(null);
+        setAccessItems(null);
+      }
+    } catch (error) {
+      console.error("Failed to save page access:", error);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -174,6 +220,17 @@ export default function RolesTable() {
                           className="rounded-lg border px-3 py-1.5 hover:bg-neutral-100 transition-all duration-300"
                         >
                           Изменить
+                        </button>
+                        <button 
+                          onClick={() => {
+                            // Получаем tenantId из роли или используем дефолтный
+                            const tenantId = role.tenantId || "default-tenant";
+                            const appRole = role.name.toUpperCase() as AppRole;
+                            openAccessEditor(appRole, tenantId);
+                          }}
+                          className="rounded-lg border px-3 py-1.5 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+                        >
+                          Доступы
                         </button>
                         {!baseRoles.includes(role.name) && (
                           <button 
@@ -318,6 +375,80 @@ export default function RolesTable() {
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Модалка редактирования доступов */}
+      {editingAccess && accessItems && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/20 p-4">
+          <motion.div 
+            className="w-full max-w-2xl rounded-2xl border bg-white p-4 shadow-lg"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Доступы роли {editingAccess.role}</h2>
+              <button 
+                onClick={() => {
+                  setEditingAccess(null);
+                  setAccessItems(null);
+                }} 
+                className="rounded-lg border px-3 py-1.5 hover:bg-neutral-100 transition-all duration-300"
+              >
+                Закрыть
+              </button>
+            </div>
+            
+            <div className="max-h-[60vh] overflow-y-auto space-y-2 mb-4">
+              {accessItems.map((item, idx) => (
+                <label key={item.slug} className="flex items-center justify-between border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                  <div>
+                    <div className="font-medium">{item.label}</div>
+                    <div className="text-xs text-gray-500">
+                      {item.slug}
+                      {item.system && " • системная"}
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={item.allowed}
+                    onChange={e => {
+                      const v = e.target.checked;
+                      setAccessItems(prev => {
+                        if (!prev) return prev;
+                        const copy = [...prev];
+                        // Нельзя выключать системную для OWNER
+                        if (editingAccess.role === "OWNER" && item.system && !v) return prev;
+                        copy[idx] = { ...copy[idx], allowed: v };
+                        return copy;
+                      });
+                    }}
+                    disabled={editingAccess.role === "OWNER" && item.system}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                </label>
+              ))}
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={() => {
+                  setEditingAccess(null);
+                  setAccessItems(null);
+                }} 
+                className="rounded-lg border px-3 py-2 hover:bg-neutral-100 transition-all duration-300"
+              >
+                Отмена
+              </button>
+              <button 
+                onClick={saveAccess}
+                className="rounded-lg bg-neutral-900 px-4 py-2 text-white hover:shadow-md transition-all duration-300"
+              >
+                Сохранить
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

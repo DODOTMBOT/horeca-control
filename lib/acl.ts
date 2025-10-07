@@ -1,5 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
+import { prisma as db } from "@/lib/db/client";
 
 export type AppRole = "OWNER" | "PARTNER" | "POINT" | "PERSONAL";
 
@@ -181,3 +182,4 @@ export async function checkSandboxLimits(session: any, action: 'course' | 'lesso
   
   return { allowed: true };
 }
+

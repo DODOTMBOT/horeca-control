@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import PointSwitcherWrapper from './PointSwitcherWrapper';
+import { MenuItem } from '@/lib/menu.config';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface AppShellProps {
   userRole: string | null;
   partnerPoints: any[];
   currentPoint: any;
+  filteredMenu?: MenuItem[] | null;
 }
 
 export default function AppShell({ 
@@ -17,7 +19,8 @@ export default function AppShell({
   session, 
   userRole, 
   partnerPoints, 
-  currentPoint 
+  currentPoint,
+  filteredMenu
 }: AppShellProps) {
   const pathname = usePathname();
 
