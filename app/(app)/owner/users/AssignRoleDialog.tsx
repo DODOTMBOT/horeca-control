@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -64,10 +65,12 @@ export default function AssignRoleDialog({ user, isOpen, onClose, currentTenantI
         
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-3">
-            <img 
+            <Image 
               src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=EEE&color=111`}
-              className="h-8 w-8 rounded-full" 
-              alt="" 
+              width={32}
+              height={32}
+              className="rounded-full" 
+              alt="User avatar" 
             />
             <div>
               <div className="font-medium">{user.name || "—"}</div>

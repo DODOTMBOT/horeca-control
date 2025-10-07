@@ -1,10 +1,10 @@
 export const runtime = "nodejs";
 
-import type { NextAuthOptions } from "next-auth"
+import type { NextAuthOptions } from "next-auth/next"
 import Credentials from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { getUserRole } from "@/lib/acl"
 
 // Роли уже созданы через скрипт cleanup-roles.js
@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log('🔧 JWT callback called:', { userId: token.sub, user: user?.email });
+      console.log('🔧 JWT callback called:', { userId: token.sub, user: user?.email ? '***' : null });
       
       const userId = (user && (user as unknown as Record<string, unknown>).id) || token.sub;
       if (!userId || typeof userId !== 'string') {
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         (token as Record<string, unknown>).pointId = dbUser.pointId ?? null;
         (token as Record<string, unknown>).isPlatformOwner = userRole === "OWNER";
         
-        console.log('✅ JWT token updated:', { role: userRole, roles, isPlatformOwner: userRole === "OWNER" });
+        console.log('✅ JWT token updated:', { role: userRole, rolesCount: roles.length, isPlatformOwner: userRole === "OWNER" });
         return token;
       } catch (error) {
         console.error('❌ Error in JWT callback:', error);
@@ -115,7 +115,7 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async session({ session, token }) {
-      console.log('🔧 Session callback called:', { token: token.sub, role: (token as any).role });
+        console.log('🔧 Session callback called:', { userId: token.sub, role: (token as any).role });
       
        
       if (!session.user) session.user = {} as any;

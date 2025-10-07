@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
   try {
     // Транзакция: удаляем старые роли и создаем новую
-    const result = await prisma.$transaction(async (tx) => {
+    const _result = await prisma.$transaction(async (tx) => {
       // Удаляем все существующие роли пользователя для данного tenant
       await tx.userRole.deleteMany({
         where: { userId, tenantId }

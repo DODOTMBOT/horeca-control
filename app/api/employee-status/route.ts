@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getUserRole } from "@/lib/acl";
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = await getUserRole(session.user.id, session.user.tenantId);
+    const _userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
@@ -105,11 +105,11 @@ export async function POST(req: NextRequest) {
 
     console.log('✅ Session found:', { userId: session.user.id, tenantId: session.user.tenantId, pointId: session.user.pointId });
 
-    const userRole = await getUserRole(session.user.id, session.user.tenantId);
+    const _userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
-    console.log('🎭 User role determined:', userRole);
+    console.log('🎭 User role determined:', _userRole);
 
     if (!tenantId) {
       console.log('❌ No tenant found');
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем права на обновление статусов
-    if (!userRole || !["OWNER","PARTNER","POINT"].includes(userRole)) {
+    if (!_userRole || !["OWNER","PARTNER","POINT"].includes(_userRole)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getUserRole } from "@/lib/acl";
 import bcrypt from "bcryptjs";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, email, position, phone, department, status, notes } = body;
+    const { name, email, position, phone, status } = body;
 
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/session-provider";
@@ -21,6 +21,9 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#0b0b0f",
 };
 
