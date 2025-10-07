@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { ensureUser } from "@/lib/guards";
 
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
-  const userRole = (session?.user as Record<string, unknown>)?.role as string;
+  ensureUser(session);
+  ensureUser(session);
+  const userRole = session.user.role ?? null;
   
   // Только Owner может обновлять роли
   if (userRole !== "OWNER") {
@@ -40,7 +43,7 @@ export async function PUT(req: Request) {
       ...(inheritsFrom !== undefined && { inheritsFrom }),
       ...(tenantId !== undefined && { tenantId }),
       lastModifiedAt: new Date(),
-      lastModifiedBy: session?.user?.id,
+      lastModifiedBy: session.user?.id,
     },
   });
 

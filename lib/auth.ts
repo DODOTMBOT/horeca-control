@@ -1,10 +1,10 @@
 export const runtime = "nodejs";
 
-import type { NextAuthOptions } from "next-auth/next"
+import type { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { getServerSession } from "next-auth/next"
+import { getServerSession } from "next-auth"
 import { getUserRole } from "@/lib/acl"
 
 // Роли уже созданы через скрипт cleanup-roles.js
@@ -44,7 +44,16 @@ export const authOptions: NextAuthOptions = {
               }
               
               console.log("✅ Auth working - User signed in:", user.email)
-              return { id: user.id, email: user.email, name: user.name || null }
+              return { 
+                id: user.id, 
+                email: user.email, 
+                name: user.name ?? null,
+                tenantId: user.tenantId ?? null,
+                pointId: user.pointId ?? null,
+                isPlatformOwner: false,
+                role: null,
+                roles: [],
+              }
             } catch (error) {
               console.error("[authorize]", error)
               return null
@@ -55,6 +64,17 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       console.log('🔧 JWT callback called:', { userId: token.sub, user: user?.email ? '***' : null });
+      
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name ?? null;
+        (token as any).tenantId = (user as any).tenantId ?? null;
+        (token as any).pointId = (user as any).pointId ?? null;
+        (token as any).isPlatformOwner = !!(user as any).isPlatformOwner;
+        (token as any).role = (user as any).role ?? null;
+        (token as any).roles = (user as any).roles ?? [];
+      }
       
       const userId = (user && (user as unknown as Record<string, unknown>).id) || token.sub;
       if (!userId || typeof userId !== 'string') {
@@ -117,20 +137,17 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
         console.log('🔧 Session callback called:', { userId: token.sub, role: (token as any).role });
       
-       
-      if (!session.user) session.user = {} as any;
-       
-      (session.user as any).id = token.sub;
-       
-      (session.user as any).roles = (token as any).roles || [];
-       
-      (session.user as any).role = (token as any).role; // Новая роль
-       
-      (session.user as any).tenantId = (token as any).tenantId ?? null;
-       
-      (session.user as any).pointId = (token as any).pointId ?? null;
-       
-      (session.user as any).isPlatformOwner = !!(token as any).isPlatformOwner;
+      session.user = {
+        id: (token as any).id,
+        email: token.email ?? null,
+        name: token.name ?? null,
+        image: (session.user as any)?.image ?? null,
+        tenantId: (token as any).tenantId ?? null,
+        pointId: (token as any).pointId ?? null,
+        isPlatformOwner: !!(token as any).isPlatformOwner,
+        role: ((token as any).role ?? null) as any,
+        roles: (((token as any).roles ?? []) as string[]),
+      };
       
       console.log('✅ Session updated:', { 
         email: session.user.email, 

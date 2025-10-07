@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { ensureUser } from "@/lib/guards";
 import prisma from "@/lib/prisma";
 import { getUserRole } from "@/lib/acl";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  ensureUser(session);
+    ensureUser(session);
 
     const _userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
@@ -97,8 +96,9 @@ export async function POST(req: NextRequest) {
   try {
     console.log('🔧 Employee status update request received');
     const session = await getServerSession(authOptions);
+  ensureUser(session);
 
-    if (!session?.user?.id) {
+    if (!session.user?.id) {
       console.log('❌ No session found');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

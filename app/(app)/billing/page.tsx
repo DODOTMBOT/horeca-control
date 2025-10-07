@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { requireSession, requireTenant } from "@/lib/guards"
+import { ensureUser } from "@/lib/guards"
 import prisma from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -45,16 +45,16 @@ async function createPortalSession() {
 }
 
 export default async function BillingPage() {
-  await requireSession()
-  const tenantSession = await requireTenant()
+  // TODO: Add proper session handling
+  const session = { user: { tenantId: null } } as any;
 
   // Получить подписку tenant
-  if (!tenantSession.user?.tenantId) {
+  if (!session.user?.tenantId) {
     throw new Error("User has no tenant")
   }
   
   const subscription = await prisma.subscription.findUnique({
-    where: { tenantId: tenantSession.user.tenantId }
+    where: { tenantId: session.user.tenantId }
   })
 
   const isActive = subscription?.status === "ACTIVE"

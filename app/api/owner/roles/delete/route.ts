@@ -1,11 +1,14 @@
+import { ensureUser } from "@/lib/guards";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function DELETE(req: Request) {
   const session = await getServerSession(authOptions);
-  const userRole = (session?.user as Record<string, unknown>)?.role as string;
+  ensureUser(session);
+  ensureUser(session);
+  const userRole = session.user.role ?? null;
   
   // Только Owner может удалять роли
   if (userRole !== "OWNER") {

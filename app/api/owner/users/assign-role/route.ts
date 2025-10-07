@@ -1,12 +1,14 @@
+import { ensureUser } from "@/lib/guards";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
+  ensureUser(session);
   
-  if (!session?.user?.id) {
+  if (!session.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,8 +19,8 @@ export async function POST(req: Request) {
   }
 
   // Проверяем авторизацию: только платформенный владелец ИЛИ владелец текущего tenant
-  const isPlatformOwner = (session.user as any)?.isPlatformOwner;
-  const userTenantId = (session.user as any)?.tenantId;
+  const isPlatformOwner = session.user?.isPlatformOwner;
+  const userTenantId = session.user?.tenantId;
   
   if (!isPlatformOwner && userTenantId !== tenantId) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
