@@ -10,8 +10,8 @@ export async function PUT(req: Request) {
   ensureUser(session);
   const userRole = session.user.role ?? null;
   
-  // Только Owner может обновлять роли
-  if (userRole !== "OWNER") {
+  // Только ORGANIZATION_OWNER и выше может обновлять роли
+  if (userRole !== "ORGANIZATION_OWNER" && userRole !== "PLATFORM_OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

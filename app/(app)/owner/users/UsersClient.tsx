@@ -134,9 +134,11 @@ export default function UsersClient({ initialUsers, currentTenantId }: UsersClie
                                 <span 
                                   key={r}
                                   className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                                    r === "OWNER" ? "bg-red-600 text-white" :
-                                    r === "PARTNER" ? "bg-blue-600 text-white" :
-                                    r === "POINT" ? "bg-green-600 text-white" :
+                                    r === "PLATFORM_OWNER" ? "bg-purple-600 text-white" :
+                                    r === "ORGANIZATION_OWNER" ? "bg-red-600 text-white" :
+                                    r === "MANAGER" ? "bg-blue-600 text-white" :
+                                    r === "POINT_MANAGER" ? "bg-green-600 text-white" :
+                                    r === "EMPLOYEE" ? "bg-gray-600 text-white" :
                                     "bg-neutral-900 text-white"
                                   }`}
                                 >

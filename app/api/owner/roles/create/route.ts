@@ -9,8 +9,8 @@ export async function POST(req: Request) {
   ensureUser(session);
   const userRole = session.user?.role as string;
   
-  // Только Owner может создавать роли
-  if (userRole !== "OWNER") {
+  // Только ORGANIZATION_OWNER и выше может создавать роли
+  if (userRole !== "ORGANIZATION_OWNER" && userRole !== "PLATFORM_OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

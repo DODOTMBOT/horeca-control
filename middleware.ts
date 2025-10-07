@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
+// Указываем, что middleware должен работать в Node.js runtime, а не в edge
+export const runtime = 'nodejs';
+
 const OWNER_RE = /^\/owner(\/|$)/;
 const PARTNER_RE = /^\/partner(\/|$)/;
 
@@ -24,38 +27,27 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/signin", url));
   }
 
-  // Получаем роль пользователя из токена
   const userRole = (token as any).role as string | undefined;
 
-  // Проверка доступа к owner маршрутам (только для Owner)
+  // Проверка доступа к owner маршрутам (только для ORGANIZATION_OWNER и выше)
   if (OWNER_RE.test(path)) {
-    if (userRole !== "Owner") {
+    if (userRole !== "ORGANIZATION_OWNER" && userRole !== "PLATFORM_OWNER") {
       return NextResponse.redirect(new URL("/dashboard", url));
     }
     return NextResponse.next();
   }
 
-  // Проверка доступа к partner маршрутам (только для Partner)
+  // Проверка доступа к partner маршрутам (для MANAGER и выше)
   if (PARTNER_RE.test(path)) {
-    if (userRole !== "Partner") {
+    if (userRole !== "PLATFORM_OWNER" && userRole !== "ORGANIZATION_OWNER" && userRole !== "MANAGER") {
       return NextResponse.redirect(new URL("/dashboard", url));
     }
     return NextResponse.next();
   }
 
-  // Проверка доступа к модулям (Owner, Partner и Point имеют доступ)
-  const moduleRoutes = ["/labeling", "/files", "/learning", "/haccp", "/medical-books", "/schedule-salary", "/employees"];
-  const isModuleRoute = moduleRoutes.some(route => path.startsWith(route));
-  
-  if (isModuleRoute) {
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
-      return NextResponse.redirect(new URL("/dashboard", url));
-    }
-  }
-
-  // Проверка доступа к биллингу (для Owner и Partner)
+  // Проверка доступа к биллингу (только для ORGANIZATION_OWNER и выше)
   if (path.startsWith("/billing")) {
-    if (userRole !== "Owner" && userRole !== "Partner") {
+    if (userRole !== "PLATFORM_OWNER" && userRole !== "ORGANIZATION_OWNER") {
       return NextResponse.redirect(new URL("/dashboard", url));
     }
   }

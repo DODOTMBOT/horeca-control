@@ -10,6 +10,8 @@ interface AppShellProps {
   userRole: string | null;
   partnerPoints: any[];
   currentPoint: any;
+  visibleMenuItems: string[];
+  permissions: any;
 }
 
 export default function AppShell({ 
@@ -17,7 +19,9 @@ export default function AppShell({
   session, 
   userRole, 
   partnerPoints, 
-  currentPoint 
+  currentPoint,
+  visibleMenuItems,
+  permissions
 }: AppShellProps) {
   const pathname = usePathname();
 
@@ -149,8 +153,8 @@ export default function AppShell({
               Управление
             </h3>
             <div className="space-y-1">
-              {/* Пользователи - только для Owner */}
-              {userRole === "Owner" && (
+              {/* Пользователи - для ORGANIZATION_OWNER и выше */}
+              {(userRole === "PLATFORM_OWNER" || userRole === "ORGANIZATION_OWNER") && (
                 <Link 
                   href="/owner/users" 
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
@@ -166,8 +170,8 @@ export default function AppShell({
                 </Link>
               )}
               
-              {/* Мои сотрудники - для Owner, Point и Partner */}
-              {(userRole === "Owner" || userRole === "Point" || userRole === "Partner") && (
+              {/* Мои сотрудники - для MANAGER и выше */}
+              {(userRole === "PLATFORM_OWNER" || userRole === "ORGANIZATION_OWNER" || userRole === "MANAGER" || userRole === "POINT_MANAGER") && (
                 <Link 
                   href="/employees" 
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
@@ -183,8 +187,8 @@ export default function AppShell({
                 </Link>
               )}
               
-              {/* Мои точки - только для Partner */}
-              {userRole === "Partner" && (
+              {/* Мои точки - для MANAGER и выше */}
+              {(userRole === "PLATFORM_OWNER" || userRole === "ORGANIZATION_OWNER" || userRole === "MANAGER") && (
                 <Link 
                   href="/partner/points" 
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
@@ -200,8 +204,8 @@ export default function AppShell({
                 </Link>
               )}
               
-              {/* Мое оборудование - для Owner, Point и Partner */}
-              {(userRole === "Owner" || userRole === "Point" || userRole === "Partner") && (
+              {/* Мое оборудование - для MANAGER и выше */}
+              {(userRole === "PLATFORM_OWNER" || userRole === "ORGANIZATION_OWNER" || userRole === "MANAGER" || userRole === "POINT_MANAGER") && (
                 <Link 
                   href="/equipment" 
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
@@ -217,8 +221,8 @@ export default function AppShell({
                 </Link>
               )}
               
-              {/* Биллинг - для Owner и Partner */}
-              {(userRole === "Owner" || userRole === "Partner") && (
+              {/* Биллинг - для ORGANIZATION_OWNER и выше */}
+              {(userRole === "PLATFORM_OWNER" || userRole === "ORGANIZATION_OWNER") && (
                 <Link 
                   href="/billing" 
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
@@ -247,7 +251,7 @@ export default function AppShell({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{session?.user?.name || session?.user?.email || "Пользователь"}</p>
-              <p className="text-xs text-gray-500">{userRole || "Owner"}</p>
+              <p className="text-xs text-gray-500">{userRole || "EMPLOYEE"}</p>
             </div>
             <form action="/api/auth/signout" method="post" className="inline">
               <button 
@@ -266,8 +270,8 @@ export default function AppShell({
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Header with point switcher for partners */}
-        {userRole === "Partner" && partnerPoints.length > 0 && (
+        {/* Header with point switcher for managers */}
+        {(userRole === "MANAGER" || userRole === "POINT_MANAGER") && partnerPoints.length > 0 && (
           <div className="bg-white border-b border-gray-200 px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -281,8 +285,8 @@ export default function AppShell({
           </div>
         )}
         
-        {/* Current point info for point users */}
-        {userRole === "Point" && currentPoint && (
+        {/* Current point info for point managers */}
+        {userRole === "POINT_MANAGER" && currentPoint && (
           <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
             <div className="flex items-center gap-2">
               <span className="text-sm text-blue-600">Текущая точка:</span>

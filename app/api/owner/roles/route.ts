@@ -15,7 +15,7 @@ export async function GET() {
 
     const userRole = await getUserRole(session.user.id, session.user.tenantId!)
     
-    if (!hasRole(userRole, "OWNER") && !session.user.isPlatformOwner) {
+    if (!hasRole(userRole, "ORGANIZATION_OWNER") && !session.user.isPlatformOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     const userRole = await getUserRole(session.user.id, session.user.tenantId!)
     
-    if (!hasRole(userRole, "OWNER") && !session.user.isPlatformOwner) {
+    if (!hasRole(userRole, "ORGANIZATION_OWNER") && !session.user.isPlatformOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

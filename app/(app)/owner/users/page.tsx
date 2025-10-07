@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { ensureUser } from "@/lib/guards";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { getUserRole } from "@/lib/acl";
 import UsersClient from "./UsersClient";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +20,10 @@ type UserDTO = {
 export default async function UsersPage() {
   const session = await getServerSession(authOptions);
   ensureUser(session);
-  ensureUser(session);
 
-  // Проверяем, что пользователь - платформенный владелец
-  const isPlatformOwner = session.user?.isPlatformOwner;
-  if (!isPlatformOwner) {
+  // Проверяем, что пользователь имеет роль ORGANIZATION_OWNER или выше
+  const userRole = await getUserRole(session.user.id!, session.user.tenantId);
+  if (userRole !== "ORGANIZATION_OWNER" && userRole !== "PLATFORM_OWNER") {
     redirect("/dashboard");
   }
 

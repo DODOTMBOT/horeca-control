@@ -1,7 +1,9 @@
 import "server-only";
 import prisma from "@/lib/prisma";
+import { getUserPermissions, canAccessPage } from "@/lib/permissions";
+import { PermissionSet } from "@/lib/permission-types";
 
-export type AppRole = "OWNER" | "PARTNER" | "POINT" | "PERSONAL";
+export type AppRole = "PLATFORM_OWNER" | "ORGANIZATION_OWNER" | "MANAGER" | "POINT_MANAGER" | "EMPLOYEE";
 
 export async function getUserRole(userId: string, tenantId?: string | null): Promise<AppRole | null> {
   const user = await prisma.user.findUnique({
@@ -23,22 +25,31 @@ export async function getUserRole(userId: string, tenantId?: string | null): Pro
 
   if (!user) return null;
 
-  // OWNER - владелец платформы
-  if (user.isPlatformOwner) {
-    return "OWNER";
-  }
-
   // Определяем роль по записи в UserRole
   const userRole = user.UserRole[0]?.role?.name;
   
+  // Определяем роль по новому стандарту
+  if (user.isPlatformOwner || userRole === "PLATFORM_OWNER") {
+    return "PLATFORM_OWNER";
+  } else if (userRole === "ORGANIZATION_OWNER") {
+    return "ORGANIZATION_OWNER";
+  } else if (userRole === "MANAGER") {
+    return "MANAGER";
+  } else if (userRole === "POINT_MANAGER") {
+    return "POINT_MANAGER";
+  } else if (userRole === "EMPLOYEE") {
+    return "EMPLOYEE";
+  }
+  
+  // Обратная совместимость со старыми ролями
   if (userRole === "OWNER" || userRole === "Owner" || userRole === "Владелец") {
-    return "OWNER";
+    return "ORGANIZATION_OWNER";
   } else if (userRole === "PARTNER" || userRole === "Partner" || userRole === "Партнер") {
-    return "PARTNER";
+    return "MANAGER";
   } else if (userRole === "POINT" || userRole === "Point" || userRole === "Точка") {
-    return "POINT";
+    return "POINT_MANAGER";
   } else if (userRole === "PERSONAL" || userRole === "Personal" || userRole === "Персональный") {
-    return "PERSONAL";
+    return "EMPLOYEE";
   }
 
   return null;
@@ -47,25 +58,88 @@ export async function getUserRole(userId: string, tenantId?: string | null): Pro
 export function hasRole(actual: AppRole | null, needed: AppRole): boolean {
   if (!actual) return false;
   
-  // Иерархия ролей: OWNER > PARTNER > POINT > PERSONAL
-  const roleHierarchy = { OWNER: 4, PARTNER: 3, POINT: 2, PERSONAL: 1 };
+  // Иерархия ролей: PLATFORM_OWNER > ORGANIZATION_OWNER > MANAGER > POINT_MANAGER > EMPLOYEE
+  const roleHierarchy = { 
+    PLATFORM_OWNER: 5, 
+    ORGANIZATION_OWNER: 4, 
+    MANAGER: 3, 
+    POINT_MANAGER: 2, 
+    EMPLOYEE: 1 
+  };
   return roleHierarchy[actual] >= roleHierarchy[needed];
 }
 
 /**
- * Проверяет доступ к страницам /owner (только для Owner)
+ * Проверяет доступ к страницам /owner (только для PLATFORM_OWNER и ORGANIZATION_OWNER)
  */
 export async function canAccessOwnerPages(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return role === "OWNER";
+  return role === "PLATFORM_OWNER" || role === "ORGANIZATION_OWNER";
 }
 
 /**
- * Проверяет доступ к управлению точками (только для Partner)
+ * Проверяет доступ к управлению точками (для MANAGER и выше)
  */
 export async function canManagePoints(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return role === "PARTNER";
+  return hasRole(role, "MANAGER");
+}
+
+/**
+ * Получает разрешения пользователя
+ */
+export async function getUserPermissionsWithRole(userId: string, tenantId?: string | null): Promise<{ role: AppRole | null; permissions: PermissionSet }> {
+  const role = await getUserRole(userId, tenantId);
+  
+  if (!role) {
+    return { role: null, permissions: getUserPermissions("EMPLOYEE") };
+  }
+  
+  // Получаем кастомные разрешения из базы данных
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      UserRole: {
+        where: tenantId ? { tenantId } : undefined,
+        select: {
+          role: {
+            select: {
+              name: true,
+              permissions: true
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  const userRole = user?.UserRole[0]?.role;
+  const customPermissions = userRole?.permissions;
+  
+  const permissions = getUserPermissions(role, customPermissions);
+  
+  return { role, permissions };
+}
+
+/**
+ * Проверяет доступ к странице на основе разрешений
+ */
+export async function canAccessPageWithPermissions(userId: string, pagePath: string, tenantId?: string | null): Promise<boolean> {
+  const { permissions } = await getUserPermissionsWithRole(userId, tenantId);
+  return canAccessPage(permissions, pagePath);
+}
+
+/**
+ * Проверяет конкретное разрешение пользователя
+ */
+export async function hasUserPermission(
+  userId: string, 
+  category: keyof PermissionSet, 
+  permission: string,
+  tenantId?: string | null
+): Promise<boolean> {
+  const { permissions } = await getUserPermissionsWithRole(userId, tenantId);
+  return permissions[category]?.[permission] === true;
 }
 
 /**

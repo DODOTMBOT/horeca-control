@@ -9,8 +9,8 @@ export async function GET() {
   ensureUser(session);
   const userRole = session.user?.role as string;
   
-  // Только Owner может получить список всех пользователей
-  if (userRole !== "OWNER") {
+  // Только ORGANIZATION_OWNER и выше может получить список всех пользователей
+  if (userRole !== "ORGANIZATION_OWNER" && userRole !== "PLATFORM_OWNER") {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

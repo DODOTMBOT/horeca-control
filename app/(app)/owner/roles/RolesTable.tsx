@@ -2,6 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import RolePermissionsEditor from "@/components/RolePermissionsEditor";
+import { getUserPermissionsClient } from "@/lib/permission-client";
+import { PermissionSet } from "@/lib/permission-types";
 
 type RoleDTO = {
   id: string;
@@ -25,6 +28,7 @@ export default function RolesTable() {
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleDTO | null>(null);
+  const [editingPermissions, setEditingPermissions] = useState<RoleDTO | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   
   const { data, isLoading } = useQuery({ 
@@ -70,6 +74,22 @@ export default function RolesTable() {
       return res.json();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["roles"] }),
+  });
+
+  const updatePermissionsMutation = useMutation({
+    mutationFn: async ({ roleId, permissions }: { roleId: string; permissions: PermissionSet }) => {
+      const res = await fetch("/api/owner/roles/permissions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roleId, permissions }),
+      });
+      if (!res.ok) throw new Error("Update permissions failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["roles"] });
+      setEditingPermissions(null);
+    },
   });
 
   const filteredRoles = (data ?? []).filter(role =>
@@ -174,6 +194,12 @@ export default function RolesTable() {
                           className="rounded-lg border px-3 py-1.5 hover:bg-neutral-100 transition-all duration-300"
                         >
                           Изменить
+                        </button>
+                        <button 
+                          onClick={() => setEditingPermissions(role)}
+                          className="rounded-lg border px-3 py-1.5 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all duration-300"
+                        >
+                          Разрешения
                         </button>
                         {!baseRoles.includes(role.name) && (
                           <button 
@@ -320,6 +346,21 @@ export default function RolesTable() {
             </form>
           </motion.div>
         </div>
+      )}
+
+      {/* Редактор разрешений */}
+      {editingPermissions && (
+        <RolePermissionsEditor
+          roleName={editingPermissions.name}
+          initialPermissions={getUserPermissionsClient(editingPermissions.name, editingPermissions.permissions)}
+          onSave={async (permissions) => {
+            await updatePermissionsMutation.mutateAsync({
+              roleId: editingPermissions.id,
+              permissions
+            });
+          }}
+          onCancel={() => setEditingPermissions(null)}
+        />
       )}
     </div>
   );
