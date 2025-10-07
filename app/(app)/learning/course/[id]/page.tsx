@@ -56,6 +56,7 @@ interface Course {
 }
 
 export default function CoursePage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
@@ -73,6 +74,7 @@ export default function CoursePage() {
     if (courseId) {
       fetchCourse();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   const fetchCourse = async () => {

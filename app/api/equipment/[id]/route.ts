@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 // DELETE - Удалить оборудование
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,23 +16,22 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id: equipmentId } = await params;
     const userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
-
-    const equipmentId = params.id;
 
     // Проверяем, что оборудование существует и принадлежит пользователю
     const existingEquipment = await prisma.equipment.findFirst({
       where: {
         id: equipmentId,
         tenantId,
-        ...(userRole === "Point" && pointId && { pointId })
+        ...(userRole === "POINT" && pointId && { pointId })
       }
     });
 
@@ -58,7 +57,7 @@ export async function DELETE(
 // PUT - Обновить оборудование
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -67,16 +66,17 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id: equipmentId } = await params;
     const userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const equipmentId = params.id;
+    // equipmentId уже определен выше
     const body = await req.json();
     const { type, zone, description, serialNumber, status } = body;
 
@@ -85,7 +85,7 @@ export async function PUT(
       where: {
         id: equipmentId,
         tenantId,
-        ...(userRole === "Point" && pointId && { pointId })
+        ...(userRole === "POINT" && pointId && { pointId })
       }
     });
 

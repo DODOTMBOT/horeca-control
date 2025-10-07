@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     console.log('🎭 User role:', userRole);
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       console.log('❌ Insufficient permissions');
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
     // Определяем фильтры в зависимости от роли
     const whereClause: any = { tenantId };
     
-    if (userRole === "Point" && pointId) {
+    if (userRole === "POINT" && pointId) {
       whereClause.pointId = pointId;
-    } else if (userRole === "Partner") {
+    } else if (userRole === "PARTNER") {
       // Партнеры видят все свое оборудование (с pointId и без)
       // Если выбрана конкретная точка, показываем только её оборудование
       if (pointId) {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     console.log('🎭 User role:', userRole);
 
     // Проверяем права доступа
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       console.log('❌ Insufficient permissions');
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       description,
       serialNumber,
       tenantId,
-      pointId: (userRole === "Point" || userRole === "Partner") ? pointId : undefined,
+      pointId: (userRole === "POINT" || userRole === "PARTNER") ? pointId : undefined,
       status: "active"
     };
     

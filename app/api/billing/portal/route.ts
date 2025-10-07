@@ -16,7 +16,7 @@ export async function POST(_request: NextRequest) {
     // Найти tenant текущего пользователя
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { tenants: true }
+      include: { tenant: true }
     })
 
     if (!user?.tenantId) {

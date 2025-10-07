@@ -1,5 +1,5 @@
 "use client";
-import { Control, UseFieldArrayReturn, useFieldArray } from 'react-hook-form';
+import { Control, UseFieldArrayReturn, useFieldArray, useFormContext } from 'react-hook-form';
 import { CourseCreateInput, lessonTypeEnum } from '@/lib/validators/learning';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ type Props = {
 };
 
 export function ModuleEditor({ control, modulesArray }: Props) {
+  const form = useFormContext<CourseCreateInput>();
   const { fields, append, remove } = modulesArray;
 
   return (
@@ -37,6 +38,7 @@ export function ModuleEditor({ control, modulesArray }: Props) {
 }
 
 function ModuleLessons({ control, moduleIndex }: { control: Control<CourseCreateInput>; moduleIndex: number }) {
+  const form = useFormContext<CourseCreateInput>();
   const lessons = useFieldArray({ control, name: `modules.${moduleIndex}.lessons` as const });
   return (
     <div className="space-y-3">
@@ -44,7 +46,7 @@ function ModuleLessons({ control, moduleIndex }: { control: Control<CourseCreate
         <div key={lf.id} className="rounded-md border p-3 space-y-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <Input {...(control.register as any)(`modules.${moduleIndex}.lessons.${lessonIndex}.title`)} placeholder="Название урока" />
-            <Select onValueChange={(v)=> (control.setValue as any)(`modules.${moduleIndex}.lessons.${lessonIndex}.type`, v)}>
+            <Select onValueChange={(v)=> form.setValue(`modules.${moduleIndex}.lessons.${lessonIndex}.type`, v as any)}>
               <SelectTrigger><SelectValue placeholder="Тип" /></SelectTrigger>
               <SelectContent>
                 {lessonTypeEnum.options.map((t)=> <SelectItem key={t} value={t}>{t}</SelectItem>)}

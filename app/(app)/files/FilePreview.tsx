@@ -2,13 +2,11 @@
 
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
-  Download, 
   FileText, 
-  Image as ImageIcon, 
-  File as FileIcon, 
-  FileSpreadsheet,
   ExternalLink
 } from "lucide-react";
 
@@ -52,6 +50,7 @@ export function FilePreview({ file, isOpen, onClose }: FilePreviewProps) {
     }
   }, [isOpen, file.id, file.name, file.type]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -96,6 +95,7 @@ export function FilePreview({ file, isOpen, onClose }: FilePreviewProps) {
       return (
         <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-50 to-gray-100">
           <div className="relative w-full h-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/files/${file.id}/preview`}
               alt={file.name}

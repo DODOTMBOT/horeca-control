@@ -9,10 +9,10 @@ async function main() {
   // DATA_GUARD: Запрещаем deleteMany операции
   console.log('🛡️ DATA_GUARD: Using upsert operations only')
 
-  // Создаем только одну роль "Владелец" с полными правами
+  // Создаем только одну роль "OWNER" с полными правами
   const roles = [
     {
-      name: 'Владелец',
+      name: 'OWNER',
       permissions: { 
         all: true,
         manageUsers: true,
@@ -48,9 +48,10 @@ async function main() {
 
   // Создаем демонстрационного пользователя owner@demo.local
   const demoTenant = await prisma.tenant.upsert({
-    where: { email: 'owner@demo.local' },
+    where: { id: 't_default' },
     update: { name: 'Demo Organization' },
     create: { 
+      id: 't_default',
       name: 'Demo Organization', 
       email: 'owner@demo.local' 
     }
@@ -80,15 +81,15 @@ async function main() {
     firstUser = demoUser
   }
 
-  // Назначаем роль "Владелец" демо-пользователю
-  const ownerRole = await prisma.role.findUnique({ where: { name: 'Владелец' } })
+  // Назначаем роль "OWNER" демо-пользователю
+  const ownerRole = await prisma.role.findUnique({ where: { name: 'OWNER' } })
   if (ownerRole && demoUser) {
     await prisma.userRole.upsert({
       where: { userId_tenantId: { userId: demoUser.id, tenantId: demoUser.tenantId! } },
       update: { roleId: ownerRole.id },
       create: { userId: demoUser.id, roleId: ownerRole.id, tenantId: demoUser.tenantId! }
     } as any)
-    console.log('✅ Role "Владелец" assigned to demo user')
+    console.log('✅ Role "OWNER" assigned to demo user')
   }
 
   // Добавляем тестовые данные для обучения

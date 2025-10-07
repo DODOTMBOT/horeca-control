@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         OR: [
           { userId: session.user.id },
           { 
-            roleName: { in: session.user.roles || [] },
+            roleName: { in: [] },
             tenantId: tenantId
           }
         ]

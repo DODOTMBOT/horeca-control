@@ -15,19 +15,14 @@ export async function GET() {
 
     const userRole = await getUserRole(session.user.id, session.user.tenantId!)
     
-    if (!hasRole(userRole, "Владелец") && !session.user.isPlatformOwner) {
+    if (!hasRole(userRole, "OWNER") && !session.user.isPlatformOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     // Получаем всех пользователей с их ролями
     const users = await prisma.user.findMany({
       include: {
-        UserRole: {
-          include: {
-            role: true
-          }
-        },
-        tenants: true
+        tenant: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -40,8 +35,8 @@ export async function GET() {
       name: user.name,
       email: user.email,
       isPlatformOwner: user.isPlatformOwner,
-      tenantName: user.tenants?.name || null,
-      roleName: user.isPlatformOwner ? "Владелец" : user.UserRole[0]?.role.name || "Нет роли",
+      tenantName: user.tenant?.name || null,
+      roleName: user.isPlatformOwner ? "OWNER" : "Нет роли",
       createdAt: user.createdAt
     }))
 

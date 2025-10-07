@@ -14,7 +14,7 @@ const updateLessonSchema = z.object({
 // GET /api/learning/lessons/[lessonId] - получение урока
 export async function GET(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const lessonId = params.lessonId;
+    const { lessonId } = await params;
     const tenantId = currentTenantId(session);
 
     const lesson = await prisma.lesson.findFirst({
@@ -62,7 +62,7 @@ export async function GET(
 // PUT /api/learning/lessons/[lessonId] - обновление урока
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -70,7 +70,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const lessonId = params.lessonId;
+    const { lessonId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что урок существует и пользователь может его редактировать
@@ -100,7 +100,7 @@ export async function PUT(
     }
 
     // Проверяем права на редактирование
-    if (!canAuthor(session) && existingLesson.course.ownerId !== session.user.id) {
+    if (!canAuthor(session) && existingLesson.course?.ownerId !== session.user.id) {
       return NextResponse.json({ error: 'Нет прав для редактирования урока' }, { status: 403 });
     }
 
@@ -119,7 +119,7 @@ export async function PUT(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Неверные данные', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Неверные данные', details: error.issues }, { status: 400 });
     }
     console.error('❌ Error updating lesson:', error);
     return NextResponse.json({ error: 'Ошибка обновления урока' }, { status: 500 });
@@ -129,7 +129,7 @@ export async function PUT(
 // DELETE /api/learning/lessons/[lessonId] - удаление урока
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { lessonId: string } }
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -137,7 +137,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const lessonId = params.lessonId;
+    const { lessonId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что урок существует и пользователь может его удалить
@@ -167,7 +167,7 @@ export async function DELETE(
     }
 
     // Проверяем права на удаление
-    if (!canAuthor(session) && existingLesson.course.ownerId !== session.user.id) {
+    if (!canAuthor(session) && existingLesson.course?.ownerId !== session.user.id) {
       return NextResponse.json({ error: 'Нет прав для удаления урока' }, { status: 403 });
     }
 

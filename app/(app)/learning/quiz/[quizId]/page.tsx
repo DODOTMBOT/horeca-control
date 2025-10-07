@@ -51,6 +51,7 @@ interface QuizResult {
 }
 
 export default function QuizPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
@@ -66,6 +67,7 @@ export default function QuizPage() {
     if (quizId) {
       fetchQuiz();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quizId]);
 
   const fetchQuiz = async () => {

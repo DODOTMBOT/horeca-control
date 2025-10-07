@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 
-export type AppRole = "Owner" | "Partner" | "Point";
+export type AppRole = "OWNER" | "PARTNER" | "POINT" | "PERSONAL";
 
 export async function getUserRole(userId: string, tenantId?: string | null): Promise<AppRole | null> {
   const user = await prisma.user.findUnique({
@@ -23,20 +23,22 @@ export async function getUserRole(userId: string, tenantId?: string | null): Pro
 
   if (!user) return null;
 
-  // Owner - владелец платформы
+  // OWNER - владелец платформы
   if (user.isPlatformOwner) {
-    return "Owner";
+    return "OWNER";
   }
 
   // Определяем роль по записи в UserRole
   const userRole = user.UserRole[0]?.role?.name;
   
-  if (userRole === "Owner" || userRole === "Владелец") {
-    return "Owner";
-  } else if (userRole === "Partner" || userRole === "Партнер") {
-    return "Partner";
-  } else if (userRole === "Point" || userRole === "Точка") {
-    return "Point";
+  if (userRole === "OWNER" || userRole === "Owner" || userRole === "Владелец") {
+    return "OWNER";
+  } else if (userRole === "PARTNER" || userRole === "Partner" || userRole === "Партнер") {
+    return "PARTNER";
+  } else if (userRole === "POINT" || userRole === "Point" || userRole === "Точка") {
+    return "POINT";
+  } else if (userRole === "PERSONAL" || userRole === "Personal" || userRole === "Персональный") {
+    return "PERSONAL";
   }
 
   return null;
@@ -45,8 +47,8 @@ export async function getUserRole(userId: string, tenantId?: string | null): Pro
 export function hasRole(actual: AppRole | null, needed: AppRole): boolean {
   if (!actual) return false;
   
-  // Иерархия ролей: Owner > Partner > Point
-  const roleHierarchy = { Owner: 3, Partner: 2, Point: 1 };
+  // Иерархия ролей: OWNER > PARTNER > POINT > PERSONAL
+  const roleHierarchy = { OWNER: 4, PARTNER: 3, POINT: 2, PERSONAL: 1 };
   return roleHierarchy[actual] >= roleHierarchy[needed];
 }
 
@@ -55,7 +57,7 @@ export function hasRole(actual: AppRole | null, needed: AppRole): boolean {
  */
 export async function canAccessOwnerPages(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return role === "Owner";
+  return role === "OWNER";
 }
 
 /**
@@ -63,7 +65,7 @@ export async function canAccessOwnerPages(userId: string): Promise<boolean> {
  */
 export async function canManagePoints(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return role === "Partner";
+  return role === "PARTNER";
 }
 
 /**
@@ -126,7 +128,7 @@ export function isSandbox(session: any): boolean {
  */
 export function canAuthor(session: any): boolean {
   const roles: string[] = session?.user?.roles ?? [];
-  return roles.includes("Owner") || roles.includes("Partner") || roles.includes("PLATFORM_OWNER");
+  return roles.includes("OWNER") || roles.includes("PARTNER") || roles.includes("PLATFORM_OWNER");
 }
 
 /**

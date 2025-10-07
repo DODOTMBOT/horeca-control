@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       console.log("[signup] User created with ID:", user.id)
 
       // Определяем роль для назначения
-      const roleName = isFirstUser ? "Owner" : "Partner"
+      const roleName = isFirstUser ? "OWNER" : "PARTNER"
 
       console.log("[signup] Looking for role:", roleName)
       

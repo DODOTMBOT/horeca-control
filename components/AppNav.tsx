@@ -54,11 +54,11 @@ export async function AppNav() {
 
   // Проверить права доступа
   const userRole = await getUserRole(session.user.id!, session.user.tenantId)
-  const canAccessBillingSection = hasRole(userRole, "Владелец")
+  const canAccessBillingSection = hasRole(userRole, "OWNER")
   
   // Проверяем роли из сессии для owner секции
   const roles: string[] = ((session.user as Record<string, unknown>)?.roles ?? []) as string[];
-  const canAccessOwnerSection = roles.includes("Владелец")
+  const canAccessOwnerSection = roles.includes("OWNER")
 
   const navItems = [
     { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },

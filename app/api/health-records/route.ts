@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем права на создание записей
-    if (userRole !== "Owner" && userRole !== "Partner" && userRole !== "Point") {
+    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 

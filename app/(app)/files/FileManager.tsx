@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,12 @@ import {
   Download,
   Trash2,
   Edit,
-  Move,
-  Image as ImageIcon,
-  FileText,
-  FileSpreadsheet,
-  File as FileIcon
+  Move
 } from "lucide-react";
 import { FilePreview } from "./FilePreview";
 
-interface FolderItem {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface _FolderItem {
   id: string;
   name: string;
   fileCount: number;
@@ -113,7 +110,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setShowCreateFolder(false);
     },
     onError: (error) => {
-      toast.error("Ошибка создания папки", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка создания папки", { description: msg });
     },
   });
 
@@ -147,7 +145,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       toast.success("Файл загружен!");
     },
     onError: (error) => {
-      toast.error("Ошибка загрузки файла", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка загрузки файла", { description: msg });
     },
   });
 
@@ -176,7 +175,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       document.body.removeChild(a);
       toast.success("Файл скачан!");
     } catch (error) {
-      toast.error("Ошибка скачивания файла", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка скачивания файла", { description: msg });
     }
   };
 
@@ -209,7 +209,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setRenameItem(null);
       setNewName("");
     } catch (error) {
-      toast.error("Ошибка переименования", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка переименования", { description: msg });
     }
   };
 
@@ -231,7 +232,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       queryClient.invalidateQueries({ queryKey: ["files"] });
       toast.success(`${type === 'folder' ? 'Папка' : 'Файл'} удален!`);
     } catch (error) {
-      toast.error("Ошибка удаления", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка удаления", { description: msg });
     }
   };
 
@@ -268,7 +270,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setMoveItem(null);
       setSelectedFolderId(null);
     } catch (error) {
-      toast.error("Ошибка перемещения", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка перемещения", { description: msg });
     }
   };
 
@@ -296,7 +299,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
   };
 
   // Функция для активации режима выбора
-  const handleEnableSelectMode = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleEnableSelectMode = () => {
     setSelectMode(true);
     console.log("Select mode enabled");
   };
@@ -309,8 +313,8 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
     }
     
     const itemNames = Array.from(selectedItems).map(id => {
-      const folder = folders.find(f => f.id === id);
-      const file = files.find(f => f.id === id);
+      const folder = folders.find((f: any) => f.id === id);
+      const file = files.find((f: any) => f.id === id);
       return folder ? folder.name : file ? file.name : 'элемент';
     }).join(', ');
     
@@ -323,7 +327,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
     try {
       // Удаляем все выбранные элементы
       const deletePromises = Array.from(selectedItems).map(async (id) => {
-        const isFolder = folders.some(f => f.id === id);
+        const isFolder = folders.some((f: any) => f.id === id);
         const endpoint = isFolder 
           ? `/api/files/folders/${id}` 
           : `/api/files/${id}`;
@@ -346,12 +350,13 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
       setSelectedItems(new Set());
       setSelectMode(false);
     } catch (error) {
-      toast.error("Ошибка массового удаления", { description: error.message });
+      const msg = error instanceof Error ? error.message : String(error);
+      toast.error("Ошибка массового удаления", { description: msg });
     }
   };
 
   const handleSelectAll = () => {
-    const allIds = [...folders.map(f => f.id), ...files.map(f => f.id)];
+    const allIds = [...folders.map((f: any) => f.id), ...files.map((f: any) => f.id)];
     setSelectedItems(new Set(allIds));
     setSelectMode(true);
   };
@@ -682,7 +687,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
                   checked={selectedItems.size > 0 && selectedItems.size === (filteredFolders.length + processedFiles.length)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      const allIds = [...filteredFolders.map(f => f.id), ...processedFiles.map(f => f.id)];
+                      const allIds = [...filteredFolders.map((f: any) => f.id), ...processedFiles.map((f: any) => f.id)];
                       setSelectedItems(new Set(allIds));
                       setSelectMode(true);
                     } else {
@@ -1013,7 +1018,7 @@ export function FileManager({ initialFolderId }: FileManagerProps) {
                     <span className="font-medium">Корневая папка</span>
                   </div>
                 </div>
-                {folders.map((folder) => (
+                {folders.map((folder: any) => (
                   <div 
                     key={folder.id}
                     className={`p-2 rounded border cursor-pointer hover:bg-gray-50 ${

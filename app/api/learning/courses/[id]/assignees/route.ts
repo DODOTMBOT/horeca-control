@@ -7,7 +7,7 @@ import { canAuthor, currentTenantId } from '@/lib/acl';
 // GET /api/learning/courses/[id]/assignees - получение назначений курса
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const tenantId = currentTenantId(session);
 
     // Проверяем, что курс существует и пользователь может его просматривать
