@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-type AppRole = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
+type AppRole = 'OWNER' | 'PARTNER' | 'POINT' | 'EMPLOYEE';
 
 export async function getTenantIdFromSessionStrict(): Promise<string> {
   const session = await getServerSession(authOptions);

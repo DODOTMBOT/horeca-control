@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { SessionProvider } from "next-auth/react";
 
 export default function AppProviders({ children }: { children: ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -23,9 +24,11 @@ export default function AppProviders({ children }: { children: ReactNode }) {
   // SSE отключен для стабильности
 
   return (
-    <QueryClientProvider client={client}>
-      {children}
-      <Toaster />
-    </QueryClientProvider>
+    <SessionProvider>
+      <QueryClientProvider client={client}>
+        {children}
+        <Toaster />
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }

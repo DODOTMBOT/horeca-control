@@ -2,7 +2,7 @@
 import "next-auth";
 
 declare module "next-auth" {
-  type AppRole = "OWNER" | "PARTNER" | "POINT" | "EMPLOYEE" | "MANAGER";
+  type AppRole = "OWNER" | "PARTNER" | "POINT" | "EMPLOYEE";
 
   interface Session {
     user: {

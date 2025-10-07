@@ -1,152 +1,83 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // DATA_GUARD: Запрещаем deleteMany операции
-  console.log('🛡️ DATA_GUARD: Using upsert operations only')
-
-  // Создаем только одну роль "OWNER" с полными правами
-  const roles = [
-    {
-      name: 'OWNER',
-      permissions: { 
-        all: true,
-        manageUsers: true,
-        manageRoles: true,
-        manageBilling: true,
-        labeling: true,
-        files: true,
-        learning: true,
-        platformOwner: true
-      },
-      tenantId: null,
-      partner: 'Основной партнер'
-    }
-  ]
-
-  for (const roleData of roles) {
-    await prisma.role.upsert({
-      where: { name: roleData.name },
-      update: {
-        permissions: roleData.permissions,
-        tenantId: roleData.tenantId,
-        partner: roleData.partner
-      },
-      create: {
-        name: roleData.name,
-        permissions: roleData.permissions,
-        tenantId: roleData.tenantId,
-        partner: roleData.partner
-      }
-    })
-    console.log(`✅ Role ${roleData.name} created/updated`)
-  }
-
-  // Создаем демонстрационного пользователя owner@demo.local
-  const demoTenant = await prisma.tenant.upsert({
-    where: { id: 't_default' },
-    update: { name: 'Demo Organization' },
-    create: { 
-      id: 't_default',
-      name: 'Demo Organization', 
-      email: 'owner@demo.local' 
-    }
-  })
-  console.log(`🏢 Demo tenant created/updated: ${demoTenant.name}`)
-
+  // Создаем пользователей с разными ролями
   const passwordHash = await bcrypt.hash('demo12345', 12)
-  const demoUser = await prisma.user.upsert({
+  
+  // OWNER
+  const ownerUser = await prisma.user.upsert({
     where: { email: 'owner@demo.local' },
-    update: { 
+    update: {
       name: 'Demo Owner',
       passwordHash,
-      tenantId: demoTenant.id,
+      role: 'OWNER',
     },
     create: {
       email: 'owner@demo.local',
       name: 'Demo Owner',
       passwordHash,
-      tenantId: demoTenant.id,
+      role: 'OWNER',
     }
   })
-  console.log(`👤 Demo user created/updated: owner@demo.local / demo12345`)
+  console.log(`👤 Owner user: owner@demo.local / demo12345`)
 
-  // Гарантируем наличие хотя бы одного пользователя для совместимости
-  let firstUser = await prisma.user.findFirst()
-  if (!firstUser) {
-    firstUser = demoUser
-  }
-
-  // Назначаем роль "OWNER" демо-пользователю
-  const ownerRole = await prisma.role.findUnique({ where: { name: 'OWNER' } })
-  if (ownerRole && demoUser) {
-    await prisma.userRole.upsert({
-      where: { userId_tenantId: { userId: demoUser.id, tenantId: demoUser.tenantId! } },
-      update: { roleId: ownerRole.id },
-      create: { userId: demoUser.id, roleId: ownerRole.id, tenantId: demoUser.tenantId! }
-    } as any)
-    console.log('✅ Role "OWNER" assigned to demo user')
-  }
-
-  // Добавляем тестовые данные для обучения
-  await seedLearningData(firstUser.id, firstUser.tenantId!)
-  
-  console.log('🎉 Seeding completed!')
-}
-
-async function seedLearningData(userId: string, tenantId: string) {
-  console.log('📚 Seeding learning data...')
-  
-  const existingCourses = await prisma.course.count()
-  if (existingCourses > 0) {
-    console.log('📚 Learning data already exists, skipping...')
-    return
-  }
-
-  // Создаем тестовый курс (новая структура)
-  const course = await prisma.course.create({
-    data: {
-      title: 'Основы безопасности пищевых продуктов',
-      description: 'Базовый курс по безопасности пищевых продуктов для сотрудников ресторанов и кафе',
-      ownerId: userId,
-      tenantId: tenantId,
-      category: 'ХАССП',
-      level: 'beginner',
-      durationMin: 45,
-      isPublished: true
+  // PARTNER
+  const partnerUser = await prisma.user.upsert({
+    where: { email: 'partner@demo.local' },
+    update: {
+      name: 'Demo Partner',
+      passwordHash,
+      role: 'PARTNER',
+    },
+    create: {
+      email: 'partner@demo.local',
+      name: 'Demo Partner',
+      passwordHash,
+      role: 'PARTNER',
     }
   })
-  console.log(`✅ Course "${course.title}" created`)
+  console.log(`👤 Partner user: partner@demo.local / demo12345`)
 
-  // Модули и уроки
-  const mod1 = await prisma.courseModule.create({ data: { courseId: course.id, title: 'Введение', order: 0 } })
-  const mod2 = await prisma.courseModule.create({ data: { courseId: course.id, title: 'Практика', order: 1 } })
-
-  await prisma.lesson.create({ data: { moduleId: mod1.id, title: 'Что такое безопасность?', type: 'TEXT', content: 'Безопасность пищевых продуктов...', order: 0 } })
-  await prisma.lesson.create({ data: { moduleId: mod1.id, title: 'Контроль температуры', type: 'TEXT', content: 'Опасная зона: 4-60C', order: 1 } })
-  const quizLesson = await prisma.lesson.create({ data: { moduleId: mod2.id, title: 'Квиз по теме', type: 'TEXT', order: 0 } })
-
-  const quiz = await prisma.quiz.create({ data: { lessonId: quizLesson.id, title: 'Тест по основам безопасности пищевых продуктов', passPct: 80 } })
-  console.log(`✅ Quiz "${quiz.title}" created`)
-
-  const q1 = await prisma.quizQuestion.create({ data: { quizId: quiz.id, text: 'Когда нужно мыть руки?', kind: 'single' } })
-  await prisma.quizAnswer.createMany({ data: [
-    { questionId: q1.id, text: 'Перед началом работы', isCorrect: true },
-    { questionId: q1.id, text: 'После контакта с сырьём', isCorrect: true },
-    { questionId: q1.id, text: 'Никогда', isCorrect: false },
-  ] })
-
-  await prisma.enrollment.upsert({
-    where: { userId_courseId: { userId, courseId: course.id } },
-    update: {},
-    create: { userId, courseId: course.id, tenantId }
+  // POINT
+  const pointUser = await prisma.user.upsert({
+    where: { email: 'point@demo.local' },
+    update: {
+      name: 'Demo Point Manager',
+      passwordHash,
+      role: 'POINT',
+    },
+    create: {
+      email: 'point@demo.local',
+      name: 'Demo Point Manager',
+      passwordHash,
+      role: 'POINT',
+    }
   })
+  console.log(`👤 Point user: point@demo.local / demo12345`)
 
-  console.log('📚 Learning data seeding completed!')
+  // EMPLOYEE
+  const employeeUser = await prisma.user.upsert({
+    where: { email: 'employee@demo.local' },
+    update: {
+      name: 'Demo Employee',
+      passwordHash,
+      role: 'EMPLOYEE',
+    },
+    create: {
+      email: 'employee@demo.local',
+      name: 'Demo Employee',
+      passwordHash,
+      role: 'EMPLOYEE',
+    }
+  })
+  console.log(`👤 Employee user: employee@demo.local / demo12345`)
+
+  console.log('🎉 Database seeded successfully!')
 }
 
 main()

@@ -3,86 +3,49 @@ import prisma from "@/lib/prisma";
 import { getUserPermissions, canAccessPage } from "@/lib/permissions";
 import { PermissionSet } from "@/lib/permission-types";
 
-export type AppRole = "PLATFORM_OWNER" | "ORGANIZATION_OWNER" | "MANAGER" | "POINT_MANAGER" | "EMPLOYEE";
+export type AppRole = "OWNER" | "PARTNER" | "POINT" | "EMPLOYEE";
 
 export async function getUserRole(userId: string, tenantId?: string | null): Promise<AppRole | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { 
-      isPlatformOwner: true,
-      UserRole: {
-        where: tenantId ? { tenantId } : undefined,
-        select: {
-          role: {
-            select: {
-              name: true
-            }
-          }
-        }
-      }
+      role: true
     }
   });
 
   if (!user) return null;
 
-  // Определяем роль по записи в UserRole
-  const userRole = user.UserRole[0]?.role?.name;
-  
-  // Определяем роль по новому стандарту
-  if (user.isPlatformOwner || userRole === "PLATFORM_OWNER") {
-    return "PLATFORM_OWNER";
-  } else if (userRole === "ORGANIZATION_OWNER") {
-    return "ORGANIZATION_OWNER";
-  } else if (userRole === "MANAGER") {
-    return "MANAGER";
-  } else if (userRole === "POINT_MANAGER") {
-    return "POINT_MANAGER";
-  } else if (userRole === "EMPLOYEE") {
-    return "EMPLOYEE";
-  }
-  
-  // Обратная совместимость со старыми ролями
-  if (userRole === "OWNER" || userRole === "Owner" || userRole === "Владелец") {
-    return "ORGANIZATION_OWNER";
-  } else if (userRole === "PARTNER" || userRole === "Partner" || userRole === "Партнер") {
-    return "MANAGER";
-  } else if (userRole === "POINT" || userRole === "Point" || userRole === "Точка") {
-    return "POINT_MANAGER";
-  } else if (userRole === "PERSONAL" || userRole === "Personal" || userRole === "Персональный") {
-    return "EMPLOYEE";
-  }
-
-  return null;
+  // Возвращаем роль напрямую из поля role
+  return user.role as AppRole;
 }
 
 export function hasRole(actual: AppRole | null, needed: AppRole): boolean {
   if (!actual) return false;
   
-  // Иерархия ролей: PLATFORM_OWNER > ORGANIZATION_OWNER > MANAGER > POINT_MANAGER > EMPLOYEE
+  // Иерархия ролей: OWNER > PARTNER > POINT > EMPLOYEE
   const roleHierarchy = { 
-    PLATFORM_OWNER: 5, 
-    ORGANIZATION_OWNER: 4, 
-    MANAGER: 3, 
-    POINT_MANAGER: 2, 
+    OWNER: 4, 
+    PARTNER: 3, 
+    POINT: 2, 
     EMPLOYEE: 1 
   };
   return roleHierarchy[actual] >= roleHierarchy[needed];
 }
 
 /**
- * Проверяет доступ к страницам /owner (только для PLATFORM_OWNER и ORGANIZATION_OWNER)
+ * Проверяет доступ к страницам /owner (только для OWNER)
  */
 export async function canAccessOwnerPages(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return role === "PLATFORM_OWNER" || role === "ORGANIZATION_OWNER";
+  return role === "OWNER";
 }
 
 /**
- * Проверяет доступ к управлению точками (для MANAGER и выше)
+ * Проверяет доступ к управлению точками (для PARTNER и выше)
  */
 export async function canManagePoints(userId: string): Promise<boolean> {
   const role = await getUserRole(userId);
-  return hasRole(role, "MANAGER");
+  return hasRole(role, "PARTNER");
 }
 
 /**
@@ -95,28 +58,7 @@ export async function getUserPermissionsWithRole(userId: string, tenantId?: stri
     return { role: null, permissions: getUserPermissions("EMPLOYEE") };
   }
   
-  // Получаем кастомные разрешения из базы данных
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      UserRole: {
-        where: tenantId ? { tenantId } : undefined,
-        select: {
-          role: {
-            select: {
-              name: true,
-              permissions: true
-            }
-          }
-        }
-      }
-    }
-  });
-  
-  const userRole = user?.UserRole[0]?.role;
-  const customPermissions = userRole?.permissions;
-  
-  const permissions = getUserPermissions(role, customPermissions);
+  const permissions = getUserPermissions(role);
   
   return { role, permissions };
 }
@@ -143,40 +85,19 @@ export async function hasUserPermission(
 }
 
 /**
- * Получает точки партнера
+ * Получает точки партнера (заглушка для совместимости)
  */
 export async function getPartnerPoints(userId: string): Promise<Array<{id: string, name: string}>> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { 
-      tenant: {
-        select: {
-          points: {
-            select: { id: true, name: true },
-            where: { isActive: true }
-          }
-        }
-      }
-    }
-  });
-
-  return user?.tenant?.points || [];
+  // TODO: Реализовать когда будет модель Point
+  return [];
 }
 
 /**
- * Получает текущую активную точку пользователя
+ * Получает текущую активную точку пользователя (заглушка для совместимости)
  */
 export async function getCurrentPoint(userId: string): Promise<{id: string, name: string} | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { 
-      point: {
-        select: { id: true, name: true }
-      }
-    }
-  });
-
-  return user?.point || null;
+  // TODO: Реализовать когда будет модель Point
+  return null;
 }
 
 /**
@@ -201,8 +122,8 @@ export function isSandbox(session: any): boolean {
  * Проверяет, может ли пользователь создавать/редактировать курсы
  */
 export function canAuthor(session: any): boolean {
-  const roles: string[] = session?.user?.roles ?? [];
-  return roles.includes("OWNER") || roles.includes("PARTNER") || roles.includes("PLATFORM_OWNER");
+  const role = session?.user?.role;
+  return role === "OWNER" || role === "PARTNER";
 }
 
 /**
@@ -220,11 +141,12 @@ export async function checkSandboxLimits(session: any, action: 'course' | 'lesso
     return { allowed: true };
   }
 
-  const tenantId = currentTenantId(session);
+  const userId = session?.user?.id;
+  if (!userId) return { allowed: false, message: 'Не авторизован' };
   
   switch (action) {
     case 'course':
-      const courseCount = await prisma.course.count({ where: { tenantId } });
+      const courseCount = await prisma.course.count({ where: { ownerId: userId } });
       if (courseCount >= 1) {
         return { allowed: false, message: 'В песочнице можно создать только 1 курс' };
       }
@@ -235,21 +157,11 @@ export async function checkSandboxLimits(session: any, action: 'course' | 'lesso
       break;
       
     case 'quiz':
-      const quizCount = await prisma.quiz.count({ 
-        where: { 
-          course: { tenantId } 
-        } 
-      });
-      if (quizCount >= 1) {
-        return { allowed: false, message: 'В песочнице можно создать только 1 тест' };
-      }
+      // TODO: Реализовать когда будет модель Quiz
       break;
       
     case 'assignment':
-      const assignmentCount = await prisma.assignment.count({ where: { tenantId } });
-      if (assignmentCount >= 5) {
-        return { allowed: false, message: 'В песочнице можно создать только 5 назначений' };
-      }
+      // TODO: Реализовать когда будет модель Assignment
       break;
   }
   
