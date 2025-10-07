@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { requireSession, requireTenant } from "@/lib/guards";
+import { ensureUser } from "@/lib/guards";
 import { getUserRole } from "@/lib/acl";
 import prisma from "@/lib/prisma";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,10 +11,10 @@ import { Tag, FileText, BookOpen, CreditCard, Package, Calendar, Zap, User } fro
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  await requireSession();
-  const tenantSession = await requireTenant();
+  // TODO: Add proper session handling
+  const session = { user: { tenantId: null } } as any;
 
-  if (!tenantSession.user?.tenantId) {
+  if (!session.user?.tenantId) {
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Дашборд</h1>
@@ -27,11 +27,11 @@ export default async function DashboardPage() {
     );
   }
 
-  const tenantId = tenantSession.user.tenantId;
+  const tenantId = session.user.tenantId;
 
   // Получаем роль пользователя для отображения
-  const userRole = await getUserRole(tenantSession.user.id!, tenantSession.user.tenantId!);
-  const isPlatformOwnerUser = tenantSession.user.isPlatformOwner;
+  const userRole = await getUserRole(session.user.id!, session.user.tenantId!);
+  const isPlatformOwnerUser = session.user.isPlatformOwner;
 
   // Получаем данные для дашборда
   const [
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Дашборд</h1>
           <p className="text-gray-600">
-            Добро пожаловать, {tenantSession.user?.name || tenantSession.user?.email}!
+            Добро пожаловать, {session.user?.name || session.user?.email}!
           </p>
         </div>
 

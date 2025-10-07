@@ -6,6 +6,21 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
+// Ограничения безопасности
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png', 
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+  'text/plain',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+];
+
 const uploadSchema = z.object({
   name: z.string().min(1, "Название файла обязательно"),
   displayName: z.string().min(1, "Отображаемое название файла обязательно"),
@@ -43,6 +58,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Файл не найден" }, { status: 400 });
     }
 
+    // Проверка размера файла
+    if (file.size > MAX_FILE_SIZE) {
+      console.error("[files-upload] File too large:", file.size);
+      return NextResponse.json({ error: "Файл слишком большой. Максимальный размер: 10MB" }, { status: 400 });
+    }
+
+    // Проверка типа файла
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      console.error("[files-upload] Invalid file type:", file.type);
+      return NextResponse.json({ error: "Недопустимый тип файла" }, { status: 400 });
+    }
+
     if (!metadata) {
       console.error("[files-upload] No metadata provided");
       return NextResponse.json({ error: "Метаданные не найдены" }, { status: 400 });
@@ -67,7 +94,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { name, displayName, description, folderId, accessRoles } = validatedData;
+    const { displayName, description, folderId, accessRoles } = validatedData;
 
     // Проверяем, что у пользователя есть tenantId
     if (!session.user.tenantId) {

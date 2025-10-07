@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Badge } from "@/components/ui/badge";
@@ -95,11 +96,11 @@ export function FilePreview({ file, isOpen, onClose }: FilePreviewProps) {
       return (
         <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-50 to-gray-100">
           <div className="relative w-full h-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={`/api/files/${file.id}/preview`}
               alt={file.name}
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain"
               onLoad={() => {
                 console.log("Image loaded successfully");
                 setIsLoading(false);

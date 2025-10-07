@@ -13,7 +13,7 @@ type Props = {
 };
 
 export function ModuleEditor({ control, modulesArray }: Props) {
-  const form = useFormContext<CourseCreateInput>();
+  const _form = useFormContext<CourseCreateInput>();
   const { fields, append, remove } = modulesArray;
 
   return (

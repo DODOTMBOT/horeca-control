@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getUserRole } from "@/lib/acl";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = await getUserRole(session.user.id, session.user.tenantId);
+    const _userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = await getUserRole(session.user.id, session.user.tenantId);
+    const _userRole = await getUserRole(session.user.id, session.user.tenantId);
     const tenantId = session.user.tenantId;
     const pointId = session.user.pointId;
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Проверяем права на создание записей
-    if (userRole !== "OWNER" && userRole !== "PARTNER" && userRole !== "POINT") {
+    if (_userRole !== "OWNER" && _userRole !== "PARTNER" && _userRole !== "POINT") {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -100,8 +101,13 @@ export default function CoursePage() {
                 <a className="text-blue-600 underline" href={l.content || ''} target="_blank">Скачать файл</a>
               )}
               {l.type === 'IMAGE' && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={l.content || ''} alt={l.title} className="max-h-96 rounded" />
+                <Image 
+                  src={l.content || ''} 
+                  alt={l.title} 
+                  width={400}
+                  height={384}
+                  className="max-h-96 rounded object-contain" 
+                />
               )}
               <div className="mt-3">
                 <Button 

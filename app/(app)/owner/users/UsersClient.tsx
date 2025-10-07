@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import AssignRoleDialog from "./AssignRoleDialog";
 import RolesTable from "../roles/RolesTable";
@@ -19,7 +20,7 @@ type UsersClientProps = {
 };
 
 export default function UsersClient({ initialUsers, currentTenantId }: UsersClientProps) {
-  const [showCreate, setShowCreate] = useState(false);
+  const [_showCreate, _setShowCreate] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("users");
   const [assignRoleUser, setAssignRoleUser] = useState<UserDTO | null>(null);
@@ -46,7 +47,7 @@ export default function UsersClient({ initialUsers, currentTenantId }: UsersClie
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button 
-                onClick={() => setShowCreate(true)}
+                onClick={() => _setShowCreate(true)}
                 className="h-10 rounded-xl bg-neutral-900 px-4 text-white transition-all hover:shadow-md hover:-translate-y-[1px] duration-300 ease-out"
               >
                 Добавить пользователя
@@ -111,10 +112,12 @@ export default function UsersClient({ initialUsers, currentTenantId }: UsersClie
                           <td className="px-4 py-3">{idx + 1}</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              <img 
+                              <Image 
                                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.email)}&background=EEE&color=111`}
-                                className="h-8 w-8 rounded-full" 
-                                alt="" 
+                                width={32}
+                                height={32}
+                                className="rounded-full" 
+                                alt="User avatar" 
                               />
                               <div>
                                 <div className="font-medium">{u.name || "—"}</div>

@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { ensureUser } from "@/lib/guards";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import UsersClient from "./UsersClient";
@@ -17,18 +18,16 @@ type UserDTO = {
 
 export default async function UsersPage() {
   const session = await getServerSession(authOptions);
-  
-  if (!session?.user?.id) {
-    redirect("/signin");
-  }
+  ensureUser(session);
+  ensureUser(session);
 
   // Проверяем, что пользователь - платформенный владелец
-  const isPlatformOwner = (session.user as any)?.isPlatformOwner;
+  const isPlatformOwner = session.user?.isPlatformOwner;
   if (!isPlatformOwner) {
     redirect("/dashboard");
   }
 
-  const currentTenantId = (session.user as any)?.tenantId;
+  const currentTenantId = session.user.tenantId ?? "";
 
   // Загружаем пользователей с ролями из БД
   const users = await prisma.user.findMany({

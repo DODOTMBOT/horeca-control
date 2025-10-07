@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const config = {
   api: {
@@ -6,7 +6,7 @@ export const config = {
   },
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     // Mock webhook processing
     console.log('Mock webhook received')

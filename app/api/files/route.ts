@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const roleIds = userRoles.map(ur => ur.roleId);
 
     // Получаем папки
-    const folders = await prisma.folder.findMany({
+    const _folders = await prisma.folder.findMany({
       where: {
         tenantId: session.user.tenantId,
         parentId: folderId || null,

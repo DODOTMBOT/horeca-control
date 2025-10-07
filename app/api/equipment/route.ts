@@ -5,7 +5,7 @@ import { getUserRole } from "@/lib/acl";
 import prisma from "@/lib/prisma";
 
 // GET - Получить список оборудования
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     console.log('🔍 Equipment fetch request received');
     

@@ -1,4 +1,4 @@
-import { SessionProvider, SessionData, SessionUser } from './session'
+import { SessionProvider, SessionData } from './session'
 import { Role, Tenant, Point, Prisma } from '@prisma/client'
 
 // Мок-данные для демонстрации

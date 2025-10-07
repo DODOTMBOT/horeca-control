@@ -51,7 +51,7 @@ const plans = [
 export default function PricingPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [_loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
 
   const handleSubscribe = async (priceId: string) => {
     if (!session) {
@@ -65,7 +65,7 @@ export default function PricingPage() {
       return
     }
 
-    setLoading(true)
+    _setLoading(true)
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -84,7 +84,7 @@ export default function PricingPage() {
     } catch (error) {
       console.error('Error creating checkout session:', error)
     } finally {
-      setLoading(false)
+      _setLoading(false)
     }
   }
 

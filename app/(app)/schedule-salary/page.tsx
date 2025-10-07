@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Calendar, DollarSign, Clock, User, Search, Filter, TrendingUp, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, DollarSign, Clock, User, Search, TrendingUp, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -95,7 +95,7 @@ export default function ScheduleSalaryPage() {
     }
   };
 
-  const getScheduleStatusColor = (status: string) => {
+  const _getScheduleStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800';
       case 'completed': return 'bg-green-100 text-green-800';
@@ -105,7 +105,7 @@ export default function ScheduleSalaryPage() {
     }
   };
 
-  const getScheduleStatusLabel = (status: string) => {
+  const _getScheduleStatusLabel = (status: string) => {
     switch (status) {
       case 'scheduled': return 'Запланировано';
       case 'completed': return 'Выполнено';
